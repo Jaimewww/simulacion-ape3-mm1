@@ -9,10 +9,19 @@ return one frozen `ScenarioSummary` per scenario id, ordered by scenario id. Eac
 summary MUST carry `scenario`, `lam`, `mu`, `replications`, `theory` (a
 `TheoryMetrics`), `sim_mean_wait`, `sim_mean_queue`, `sim_mean_in_system`,
 `sim_utilization`, `std_wait`, `ci95_wait`, and `rel_error_L`, `rel_error_Lq`,
-`rel_error_W`, `rel_error_Wq` computed against theory. `confidence_interval`
-MUST use the t-distribution for small samples and `relative_error(simulated,
-theoretical)` MUST return `abs(simulated - theoretical) / abs(theoretical)`.
-Specs: S6, S7.
+`rel_error_W`, `rel_error_Wq` computed against theory. `confidence_interval(values,
+confidence=0.95)` MUST return the two-sided Student-t interval **of the mean**,
+`mean ± t((1+confidence)/2, n-1) · s / √n`, where `s` is the sample standard
+deviation with `ddof=1` and `n = len(values)`. It MUST raise `ValueError` for empty
+input or for a `confidence` outside `(0, 1)`, and MUST return `(value, value)` when
+`len(values) == 1`, because a single observation carries no dispersion.
+`ci95_wait` MUST be that interval computed over the **per-replication `mean_wait`
+values**, never over individual customer waits: the quantity being compared against
+the theory is the mean of the simulated means. The implementation MUST use the
+standard library only; SciPy is not a dependency of this project.
+`relative_error(simulated, theoretical)` MUST return
+`abs(simulated - theoretical) / abs(theoretical)` and MUST raise `ValueError` when
+`theoretical == 0`. Specs: S6, S7.
 
 #### Scenario: One summary per scenario
 
@@ -26,9 +35,14 @@ Specs: S6, S7.
 
 - GIVEN `values = [1.0, 2.0, 3.0]`
 - WHEN `confidence_interval(values)` is called
-- THEN the result is `(1.0, 3.0)` within `1e-9` and `min <= mean <= max`
+- THEN the result is `(-0.4841, 4.4841)` within `1e-4`, which is
+  `2.0 ± 4.302653 · 1.0 / √3` with `t(0.975, 2) = 4.302653`
+- AND the interval is wider than the sample range `[1, 3]`, as expected for `n = 3`
+- AND `confidence_interval([7.0]) == (7.0, 7.0)`
+- AND `confidence_interval([])` raises `ValueError`
 - GIVEN `relative_error(1.05, 1.0)` and `relative_error(0.0, 1.0)`
 - THEN the results are `0.05` and `1.0` respectively
+- AND `relative_error(1.0, 0.0)` raises `ValueError`
 
 #### Scenario: Empty input is rejected
 
