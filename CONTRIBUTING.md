@@ -21,7 +21,7 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 | # | Etapa | Aporte | Responsable | Depende de | Paralelo con | Rama | Cómo se comprueba | Estado |
 |---|-------|--------|-------------|------------|--------------|------|-------------------|--------|
 | 1 | Fundación | Estructura MVC (`model/`, `view/`, `controller/`), packaging, facades de las 3 capas, `README.md`, `CONTRIBUTING.md` | Jaime Landazuri | — | — | `feat/orchestrator-foundation` | `pytest -q` verde · `python -m mm1 --help` resuelve · `import mm1` no importa streamlit | ✅ Hecho |
-| 2 | Modelo · teoría | `model/metrics.py`: `ρ = λ/μ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad | Richard Chamba | 1 | con 3 | `feat/richard-theory-analysis` | `pytest tests/test_metrics.py -q` | ⬜ Pendiente |
+| 2 | Modelo · teoría | `model/metrics.py`: `ρ = λ/μ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad | Richard Chamba | 1 | con 3 | `feat/richard-theory-analysis` | `pytest tests/test_metrics.py -q` | ✅ Listo |
 | 3 | Modelo · motor | `model/simulation.py`: SimPy, un servidor, FIFO, registro de clientes y traza de cola | Jaime Landazuri | 1 | con 2 | `feat/jaime-simulation-cli` | `pytest tests/test_simulation.py -q` | ⬜ Pendiente |
 | 4 | Controlador · CLI | `controller/cli.py`: `python -m mm1` corre los 3 escenarios y exporta | Jaime Landazuri | 3 | con 5 | `feat/jaime-simulation-cli` | `python -m mm1 --replications 5 --sim-time 300 --out outputs/` → salida 0 | ⬜ Pendiente |
 | 5 | Modelo · escenarios | `model/scenarios.py`: los 3 escenarios de la guía y las réplicas con semillas | Richard Chamba | 3 | con 4 | `feat/richard-theory-analysis` | `pytest tests/test_scenarios.py -q` | ⬜ Pendiente |

@@ -184,6 +184,31 @@ def summarize(runs) -> list[ScenarioSummary]
 - `run_scenarios(replications=3, sim_time=100.0)` devuelve 9 corridas agrupadas
   por escenario.
 
+### Estado de la primera entrega de Richard Chamba — 15/10/2026
+
+| Etapa | Estado | Evidencia |
+|-------|--------|-----------|
+| Modelo · teoría (fila 2 de `CONTRIBUTING.md`, tareas 2.1–2.4) | ✅ Listo | 17 pruebas de teoría pasan; suite completa: 48 pruebas; ruff sin hallazgos |
+| Escenarios, análisis y servicio de estudio (filas 5–7) | ⬜ Pendiente | Corresponden a las siguientes entregas |
+
+Se implementaron `utilization`, `is_stable` y `theoretical_metrics` con las firmas
+congeladas, `ρ = λ/μ` (D1) y `ValueError("El sistema no es estable")` para `λ >= μ`.
+La comparación de estabilidad es estricta; la tolerancia `1e-9` se usa solo al
+comparar resultados numéricos. `TheoryMetrics` conserva su inmutabilidad.
+
+Evidencia ejecutada desde la raíz del repositorio con `.venv/bin/python`:
+
+- RED: `.venv/bin/python -m pytest tests/test_metrics.py -q --tb=line` →
+  13 pruebas fallaron con `NotImplementedError` antes de implementar.
+- GREEN y PRESERVE: `.venv/bin/python -m pytest tests/test_metrics.py -q -o addopts=''`
+  → `17 passed`.
+- Suite tras REFACTOR: `.venv/bin/python -m pytest -q -o addopts=''` → `48 passed`.
+- Estilo: `.venv/bin/python -m ruff check src tests app` → `All checks passed!`.
+
+La evidencia cubre los tres escenarios, las identidades entre métricas, los casos
+`λ = μ` y `λ > μ`, la comparación estricta cerca del límite y la inmutabilidad.
+Esta entrega verifica teoría; la simulación y la CLI siguen pendientes.
+
 **Prerrequisitos:** bloque 1 para `metrics.py`; bloque 2 para `scenarios.py` y
 `analysis.py` (necesitan `run_mm1`). **Lo consumen:** bloques 4 y 5.
 

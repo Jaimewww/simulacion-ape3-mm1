@@ -55,10 +55,10 @@ Note: `python -m mm1` and `import mm1` outside pytest need an editable install
 
 ## Phase 2: Richard Chamba — Theory Oracle Slice (PR 2)
 
-- [ ] 2.1 `tests/test_metrics.py` (RED): analytic values for `(2.0, 3.0)`, `(2.5, 3.0)`, `(2.9, 3.0)`; `rho < 1`; `is_stable` True/False at `lam == mu`; `ValueError` when unstable; frozen-dataclass mutation raises. Interface: `utilization`, `is_stable`, `theoretical_metrics`, `TheoryMetrics`. Acceptance: `python -m pytest tests/test_metrics.py -q` fails before 2.2. Specs: S3.
-- [ ] 2.2 `src/mm1/model/metrics.py` (GREEN): `rho = lam / mu`, guide formulas for `L`, `Lq`, `W`, `Wq`, stability guard (decision D1, D2). Interface: as above. Acceptance: `python -m pytest tests/test_metrics.py -q` passes. Specs: S3, S4.
-- [ ] 2.3 `tests/test_metrics.py` (PRESERVE): one test per touched behavior — exact guide formulas `L = lam/(mu-lam)`, `W = 1/(mu-lam)`, and `is_stable(2.9, 3.0) is True`. Acceptance: passes without further code change. Specs: S3, S5.
-- [ ] 2.4 `src/mm1/model/metrics.py` (REFACTOR): extract a single tolerance constant; focused tests stay green. Acceptance: `python -m pytest tests/test_metrics.py -q` still passes. Specs: S3.
+- [x] 2.1 `tests/test_metrics.py` (RED): analytic values for `(2.0, 3.0)`, `(2.5, 3.0)`, `(2.9, 3.0)`; `rho < 1`; `is_stable` True/False at `lam == mu`; `ValueError` when unstable; frozen-dataclass mutation raises. Interface: `utilization`, `is_stable`, `theoretical_metrics`, `TheoryMetrics`. Acceptance: `python -m pytest tests/test_metrics.py -q` fails before 2.2. Specs: S3.
+- [x] 2.2 `src/mm1/model/metrics.py` (GREEN): `rho = lam / mu`, guide formulas for `L`, `Lq`, `W`, `Wq`, stability guard (decision D1, D2). Interface: as above. Acceptance: `python -m pytest tests/test_metrics.py -q` passes. Specs: S3, S4.
+- [x] 2.3 `tests/test_metrics.py` (PRESERVE): one test per touched behavior — exact guide formulas `L = lam/(mu-lam)`, `W = 1/(mu-lam)`, and `is_stable(2.9, 3.0) is True`. Acceptance: passes without further code change. Specs: S3, S5.
+- [x] 2.4 `src/mm1/model/metrics.py` (REFACTOR): extract a single tolerance constant; focused tests stay green. Acceptance: `python -m pytest tests/test_metrics.py -q` still passes. Specs: S3.
 
 ## Phase 3: Jaime Landazuri — Simulation Engine + CLI Slice (PR 3)
 
