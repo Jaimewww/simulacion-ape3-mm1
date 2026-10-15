@@ -28,7 +28,7 @@ testing:
     integration: true
     e2e: false
   notes: >
-    `python -m mm1` (src/mm1/cli.py) is the only executable
+    `python -m mm1` (src/mm1/controller/cli.py) is the only executable
     orchestration entry point. The Streamlit resource is covered by
     unit tests over its pure helper functions (theory table, stability
     guard, chart payloads); no browser E2E runner is planned.

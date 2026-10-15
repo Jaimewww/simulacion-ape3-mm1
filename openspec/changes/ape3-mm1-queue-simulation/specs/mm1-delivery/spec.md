@@ -4,7 +4,7 @@
 
 ### Requirement: The CLI MUST run the practice end to end
 
-`python -m mm1` (backed by `src/mm1/cli.py::main(argv) -> int`) MUST run the three
+`python -m mm1` (backed by `src/mm1/controller/cli.py::main(argv) -> int`) MUST run the three
 guide scenarios, write the comparison table and the figures, and return exit code
 `0`. It MUST accept `--scenarios`, `--replications`, `--sim-time`, `--seed`,
 `--warmup`, `--out`, and the single-run options `--lam` and `--mu`. For unstable
@@ -112,3 +112,51 @@ regenerate every reported artifact. This planning change MUST NOT execute
 - GIVEN the change folder
 - THEN it contains only planning artifacts (`state.yaml`, `proposal.md`, specs,
   `design.md`, `tasks.md`) and no source or test files
+
+### Requirement: The package MUST be structured as MVC
+
+`src/mm1` MUST be split into `model/`, `view/` and `controller/` (S16). Modules in
+`model/` MUST NOT import `mm1.view` or `mm1.controller`. Modules in `view/` MUST NOT
+compute domain results and MUST go through `mm1.controller.run_study` when they need
+them. `import mm1` MUST NOT import Streamlit, and `app/streamlit_app.py` MUST stay a
+thin entry point so `streamlit run app/streamlit_app.py` remains the documented
+command. Specs: S16.
+
+#### Scenario: The model never depends on a presentation layer
+
+- GIVEN `src/mm1/model/`
+- WHEN every module in it is inspected for imports
+- THEN no module imports `mm1.view` or `mm1.controller`
+
+#### Scenario: The package import stays dependency-free
+
+- GIVEN a checkout in which Streamlit is not installed
+- WHEN `python -c "import mm1, sys; assert 'streamlit' not in sys.modules"` runs
+- THEN it exits 0
+
+#### Scenario: Both front ends share one service
+
+- GIVEN the interactive page and the command line
+- WHEN either one needs the study results
+- THEN it calls `mm1.controller.run_study`, so the document and the live resource
+  cannot report different numbers
+
+### Requirement: The contribution order MUST be documented
+
+`CONTRIBUTING.md` MUST contain an ordered contribution table whose rows sequence the
+contributions from the shared foundation to the interactive Streamlit resource, MUST
+name the responsible member in every row, and MUST place the visual resource as the
+final technical deliverable (S17, S18). Its order MUST match the phase order in
+`tasks.md`. Specs: S17, S18.
+
+#### Scenario: The visual resource is the final row
+
+- GIVEN `CONTRIBUTING.md`
+- WHEN the main contribution table is read from top to bottom
+- THEN the last row is Domenica Rojas's Streamlit interactive resource and every row
+  names one of the four members
+
+#### Scenario: The order matches the task plan
+
+- GIVEN `CONTRIBUTING.md` and `tasks.md`
+- THEN the stage order in the document matches the phase order in the plan

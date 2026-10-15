@@ -94,34 +94,48 @@ teóricos y simulados aún no se han generado** (ver *Entregables*).
 ```text
 .
 ├── app/
-│   └── streamlit_app.py      # Recurso interactivo (Streamlit) — Domenica Rojas
+│   └── streamlit_app.py        # Entrada fina del recurso interactivo — Domenica Rojas
 ├── docs/
-│   ├── guia/                 # Guía firmada APE 003 (PDF + extracción de texto)
-│   └── division-trabajo.md   # Reparto de trabajo del equipo
-├── openspec/                 # Plan SDD: propuesta, specs, diseño y tareas
+│   ├── guia/                   # Guía firmada APE 003 (PDF + extracción de texto)
+│   └── division-trabajo.md     # Reparto de trabajo del equipo
+├── openspec/                   # Plan SDD: propuesta, specs, diseño y tareas
 │   └── changes/ape3-mm1-queue-simulation/
-├── odd/                      # Seguimiento ODD (ignorado por git)
+├── odd/                        # Seguimiento ODD (ignorado por git)
 │   └── tasks/ape3-mm1-queue-simulation.md
-├── outputs/                  # Artefactos generados: CSV, PNG (ignorado por git)
+├── outputs/                    # Artefactos generados: CSV, PNG (ignorado por git)
 ├── reports/
-│   └── README.md             # Qué va en reports/ y regla de artefactos
+│   └── README.md               # Qué va en reports/ y regla de artefactos
 ├── src/
-│   └── mm1/                  # Paquete Python (instalable)
-│       ├── __init__.py       # API pública congelada (re-exportaciones)
-│       ├── metrics.py        # Métricas teóricas — Richard Chamba
-│       ├── simulation.py     # Núcleo SimPy — Jaime Landazuri
-│       ├── scenarios.py      # Catálogo y ejecución de escenarios — Richard Chamba
-│       ├── analysis.py       # Agregación y comparación — Richard Chamba
-│       ├── tables.py         # Tabla comparativa (CSV/LaTeX) — Cael Soto
-│       ├── charts.py         # Gráficas (Matplotlib) — Cael Soto
-│       └── cli.py            # Punto de entrada por línea de comandos — Jaime Landazuri
+│   └── mm1/                    # Paquete Python (instalable), en tres capas MVC
+│       ├── __init__.py         # API pública congelada (25 nombres)
+│       ├── __main__.py         # Entrada de `python -m mm1`
+│       ├── model/              # CAPA MODELO: el dominio, sin render ni I/O
+│       │   ├── metrics.py      # Métricas teóricas — Richard Chamba
+│       │   ├── simulation.py   # Núcleo SimPy — Jaime Landazuri
+│       │   ├── scenarios.py    # Catálogo y ejecución de escenarios — Richard Chamba
+│       │   └── analysis.py     # Agregación, IC 95 % y error relativo — Richard Chamba
+│       ├── view/               # CAPA VISTA: presenta, no calcula
+│       │   ├── tables.py       # Tabla comparativa (CSV/LaTeX) — Cael Soto
+│       │   ├── charts.py       # Gráficas (Matplotlib) — Cael Soto
+│       │   └── streamlit_view.py  # Página interactiva — Domenica Rojas
+│       └── controller/         # CAPA CONTROLADOR: orquesta las otras dos
+│           ├── study.py        # run_study, servicio compartido — Richard Chamba
+│           └── cli.py          # Punto de entrada por línea de comandos — Jaime Landazuri
 ├── tests/
-│   └── test_smoke.py         # Prueba estructural del andamiaje (única prueba base)
+│   └── test_smoke.py           # Prueba estructural del andamiaje (única prueba base)
 ├── .gitignore
-├── pyproject.toml            # Empaquetado, ruff y configuración de pytest
-├── requirements.txt          # Dependencias (runtime + desarrollo)
+├── CONTRIBUTING.md             # Orden de aportes y reglas de trabajo del equipo
+├── pyproject.toml              # Empaquetado, ruff y configuración de pytest
+├── requirements.txt            # Dependencias (runtime + desarrollo)
 └── README.md
 ```
+
+> Estructura **MVC** (patrón de diseño pedido para el proyecto):
+> `model/` tiene el dominio y no conoce la presentación; `view/` presenta y no calcula;
+> `controller/` es la única capa que conoce a las otras dos.
+> `view.streamlit_view` pide los resultados a `controller.run_study`, así la página
+> interactiva y el documento muestran siempre los mismos números.
+> `import mm1` **no** importa Streamlit: la página se carga solo cuando se abre la app.
 
 > `odd/` contiene el seguimiento local del flujo ODD y **no se versiona**;
 > `openspec/` sí se versiona. Los artefactos generados (CSV, PNG, LaTeX) se
@@ -168,7 +182,7 @@ El plan SDD prevé una única entrada de orquestación a nivel de repositorio:
 python -m mm1
 ```
 
-**La CLI todavía no está implementada.** `src/mm1/cli.py` solo contiene el *stub*
+**La CLI todavía no está implementada.** `src/mm1/controller/cli.py` solo contiene el *stub*
 de `main`; su lógica y sus opciones se definen en el plan SDD (ver *Enlaces
 útiles*) y aún no se han escrito. Por ahora este comando no produce resultados.
 
@@ -192,15 +206,20 @@ primero (enfoque *test-first*) en su archivo correspondiente.
 
 ## Reparto de trabajo
 
-| Integrante | Archivos o entregables |
-| --- | --- |
-| Jaime Landazuri | `src/mm1/simulation.py`, `src/mm1/cli.py` |
-| Richard Chamba | `src/mm1/metrics.py`, `src/mm1/scenarios.py`, `src/mm1/analysis.py` |
-| Cael Soto | `src/mm1/tables.py`, `src/mm1/charts.py` |
-| Domenica Rojas | `app/streamlit_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
+| Integrante | Capa MVC | Archivos o entregables |
+| --- | --- | --- |
+| Jaime Landazuri | Modelo + Controlador | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` |
+| Richard Chamba | Modelo + Controlador | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py`, `tests/test_study.py` |
+| Cael Soto | Vista | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` |
+| Domenica Rojas | Vista + cierre | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
+
+**El orden en que se hacen los aportes —de la base al recurso visual, que es el
+entregable final del código— está en [`CONTRIBUTING.md`](CONTRIBUTING.md).** Ese es
+el documento que hay que mirar para saber qué hacer ahora y qué todavía no.
 
 El detalle de tareas, dependencias y criterios de aceptación está en
-[`docs/division-trabajo.md`](docs/division-trabajo.md).
+[`docs/division-trabajo.md`](docs/division-trabajo.md) y en el plan técnico
+[`openspec/changes/ape3-mm1-queue-simulation/tasks.md`](openspec/changes/ape3-mm1-queue-simulation/tasks.md).
 
 ## Entregables de la práctica
 
@@ -211,7 +230,7 @@ El detalle de tareas, dependencias y criterios de aceptación está en
 | Tabla comparativa teórico vs. simulado | **Pendiente** (`tables.py`, `analysis.py`) |
 | Documento técnico | **Pendiente** (`reports/`) |
 | Video de demostración | **Pendiente** (`reports/`) |
-| Recurso interactivo (Streamlit) | **Pendiente** (`app/streamlit_app.py`) |
+| Recurso interactivo (Streamlit) | **Pendiente** (`src/mm1/view/streamlit_view.py` + entrada `app/streamlit_app.py`) |
 | Defensa oral y demostración | **Pendiente** |
 
 No se incluyen resultados numéricos porque la simulación **aún no se ha

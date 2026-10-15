@@ -25,11 +25,17 @@ bloque 1 habilita a los demás.
 
 | # | Integrante | Rol en la práctica | Archivos propios | Specs | Rama |
 |---|-----------|--------------------|------------------|-------|------|
-| 1 | Orquestador (cualquier integrante) | Base del repositorio y empaquetado | `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md`, `src/mm1/__init__.py`, `src/mm1/__main__.py` | S2, S10, S12 | `feat/orchestrator-foundation` |
-| 2 | Jaime Landazuri | Motor de simulación SimPy y línea de comandos | `src/mm1/simulation.py`, `src/mm1/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` | S4, S7, S12, S13 | `feat/jaime-simulation-cli` |
-| 3 | Richard Chamba | Modelo teórico, escenarios y análisis estadístico | `src/mm1/metrics.py`, `src/mm1/scenarios.py`, `src/mm1/analysis.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py` | S3, S5, S6 | `feat/richard-theory-analysis` |
-| 4 | Cael Soto | Tabla comparativa y gráficas | `src/mm1/tables.py`, `src/mm1/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` | S6, S7 | `feat/cael-tables-charts` |
-| 5 | Domenica Rojas | Recurso interactivo y documento técnico | `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | S8, S9, S11, S15 | `feat/domenica-streamlit-document` |
+| 1 | Orquestador (cualquier integrante) | Base del repositorio, estructura MVC y empaquetado | `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md`, `CONTRIBUTING.md`, `src/mm1/__init__.py`, `src/mm1/__main__.py`, `src/mm1/model/__init__.py`, `src/mm1/view/__init__.py`, `src/mm1/controller/__init__.py` | S2, S10, S12, S16, S17 | `feat/orchestrator-foundation` |
+| 2 | Jaime Landazuri | Motor de simulación SimPy y línea de comandos | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` | S4, S7, S12, S13 | `feat/jaime-simulation-cli` |
+| 3 | Richard Chamba | Modelo teórico, escenarios, análisis estadístico y servicio de estudio | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py`, `tests/test_study.py` | S3, S5, S6, S16 | `feat/richard-theory-analysis` |
+| 4 | Cael Soto | Tabla comparativa y gráficas | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` | S6, S7 | `feat/cael-tables-charts` |
+| 5 | Domenica Rojas | Recurso interactivo y documento técnico | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | S8, S9, S11, S15, S18 | `feat/domenica-streamlit-document` |
+
+**El orden en que se hacen los aportes (de la base al recurso visual, que es el
+entregable final del código) está en
+[`../CONTRIBUTING.md`](../CONTRIBUTING.md).** Este documento lo detalla por
+integrante; ante cualquier duda de "qué va ahora y qué todavía no", manda el orden
+de `CONTRIBUTING.md`.
 
 Regla de oro: **nadie escribe en los archivos de otro bloque**. Las interfaces
 públicas están congeladas en `design.md`; si alguien necesita un cambio de firma,
@@ -91,7 +97,7 @@ se avisa al equipo antes de tocar código.
 
 ## 5. Bloque 2 — Motor de simulación y CLI (Jaime Landazuri)
 
-**Archivos propios:** `src/mm1/simulation.py`, `src/mm1/cli.py`,
+**Archivos propios:** `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`,
 `tests/test_simulation.py`, `tests/test_smoke.py`.
 **Specs:** S4 (pseudocódigo de la guía), S7 (resultados esperados),
 S12 (Python), S13 (alcance de la planificación).
@@ -137,8 +143,8 @@ gráficas) y 5 (recurso interactivo).
 
 ## 6. Bloque 3 — Modelo teórico, escenarios y análisis (Richard Chamba)
 
-**Archivos propios:** `src/mm1/metrics.py`, `src/mm1/scenarios.py`,
-`src/mm1/analysis.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`,
+**Archivos propios:** `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`,
+`src/mm1/model/analysis.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`,
 `tests/test_analysis.py`.
 **Specs:** S3 (modelo teórico), S5 (escenarios), S6 (métricas y tabla).
 
@@ -188,7 +194,7 @@ la parte teórica de la parte de escenarios y análisis).
 
 ## 7. Bloque 4 — Tabla comparativa y gráficas (Cael Soto)
 
-**Archivos propios:** `src/mm1/tables.py`, `src/mm1/charts.py`,
+**Archivos propios:** `src/mm1/view/tables.py`, `src/mm1/view/charts.py`,
 `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**`.
 **Specs:** S6 (tabla comparativa), S7 (gráficas del comportamiento).
 
@@ -234,19 +240,26 @@ orden 1, 2, 3.
 
 ## 8. Bloque 5 — Recurso interactivo y documento (Domenica Rojas)
 
-**Archivos propios:** `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
+**Archivos propios:** `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
 **Specs:** S8 (10 preguntas de control), S9 (criterios de evaluación),
-S11 (recurso gráfico interactivo), S15 (Streamlit).
+S11 (recurso gráfico interactivo), S15 (Streamlit), S18 (es el entregable final).
 
-**Interfaz que debe cumplir (helpers puros, sin abrir Streamlit)**
+**Interfaz que debe cumplir** (vive en `src/mm1/view/streamlit_view.py`;
+`app/streamlit_app.py` es solo la entrada fina que llama a `render()`)
 
 ```python
+def render() -> None
 def theory_row(lam: float, mu: float) -> dict[str, float]
 def stability_message(lam: float, mu: float) -> str
 def scenario_table(summaries) -> "pandas.DataFrame"
 def build_queue_figure(run) -> "matplotlib.figure.Figure"
 def build_comparison_figure(summaries) -> "matplotlib.figure.Figure"
 ```
+
+**Regla de capa:** la vista **no calcula** resultados del dominio. Los datos salen de
+`mm1.controller.study.run_study`, y las figuras y la tabla se piden a
+`mm1.view.charts` y `mm1.view.tables`. Así la página y el documento nunca muestran
+números distintos.
 
 **Entregables — recurso interactivo (Streamlit)**
 
@@ -301,20 +314,26 @@ def build_comparison_figure(summaries) -> "matplotlib.figure.Figure"
 
 ## 9. Orden de integración
 
-| Orden | Rama | Depende de | Resultado verificable |
-|-------|------|-----------|------------------------|
-| 1 | `feat/orchestrator-foundation` | — | `python -c "import mm1"` |
-| 2 | `feat/richard-theory-analysis` (parte teórica) | 1 | `python -m pytest tests/test_metrics.py -q` |
-| 3 | `feat/jaime-simulation-cli` | 1, 2 | `python -m mm1 --replications 5 --sim-time 300 --out outputs/` |
-| 4 | `feat/richard-theory-analysis` (escenarios y análisis) | 3 | `python -m pytest tests/test_scenarios.py tests/test_analysis.py -q` |
-| 5 | `feat/cael-tables-charts` | 4 | CSV, TeX y PNG en `outputs/` |
-| 6 | `feat/domenica-streamlit-document` | 5 | `streamlit run app/streamlit_app.py` y documento en `reports/` |
+Mismo orden que la tabla de [`../CONTRIBUTING.md`](../CONTRIBUTING.md), acá visto por
+rama. Es el orden de **integración**; la programación puede adelantarse en paralelo
+porque los archivos son disjuntos.
 
-Los bloques se pueden **programar en paralelo** porque los archivos son disjuntos,
-pero la integración sigue este orden: cada PR necesita que existan las interfaces
-congeladas del anterior. Todos los PR apuntan a `main` y ninguno debe superar las
-400 líneas escritas; si un bloque las supera, se divide en dos PR del mismo
-integrante.
+| Orden | Etapa | Rama | Depende de | Resultado verificable |
+|-------|-------|------|-----------|------------------------|
+| 1 | Fundación (estructura MVC) | `feat/orchestrator-foundation` | — | `python -c "import mm1"` y `python -m pytest -q` verde |
+| 2 | Modelo · teoría | `feat/richard-theory-analysis` | 1 | `python -m pytest tests/test_metrics.py -q` |
+| 3 | Modelo · motor SimPy | `feat/jaime-simulation-cli` | 1 | `python -m pytest tests/test_simulation.py -q` |
+| 4 | Controlador · CLI | `feat/jaime-simulation-cli` | 3 | `python -m mm1 --replications 5 --sim-time 300 --out outputs/` |
+| 5 | Modelo · escenarios | `feat/richard-theory-analysis` | 3 | `python -m pytest tests/test_scenarios.py -q` |
+| 6 | Modelo · análisis (IC 95 %, error relativo) | `feat/richard-theory-analysis` | 5 | `python -m pytest tests/test_analysis.py -q` |
+| 7 | Controlador · servicio `run_study` | `feat/richard-theory-analysis` | 6 | `python -m pytest tests/test_study.py -q` |
+| 8 | Vista · tabla comparativa | `feat/cael-tables-charts` | 7 | `python -m pytest tests/test_tables.py -q` |
+| 9 | Vista · gráficas | `feat/cael-tables-charts` | 7 | `python -m pytest tests/test_charts.py -q` |
+| 10 | **Vista · recurso interactivo** (entregable final del código) | `feat/domenica-streamlit-document` | 7, 8, 9 | `python -m pytest tests/test_app.py -q` y `streamlit run app/streamlit_app.py` |
+
+Las etapas 2 y 3 pueden hacerse en paralelo, igual que 4 con 5 y 8 con 9. Todos los PR
+apuntan a `main` y ninguno debe superar las 400 líneas escritas; si un bloque las
+supera, se divide en dos PR del mismo integrante.
 
 ---
 
@@ -339,13 +358,14 @@ integrante.
 **Bloque 1 — base (orquestador)**
 
 ```text
-Tarea: ejecuta las tareas 1.1 a 1.4 de
+Tarea: ejecuta las tareas 1.1 a 1.6 de
 openspec/changes/ape3-mm1-queue-simulation/tasks.md.
 Archivos permitidos: requirements.txt, pyproject.toml, .gitignore, README.md,
-src/mm1/__init__.py, src/mm1/__main__.py.
+CONTRIBUTING.md, src/mm1/__init__.py, src/mm1/__main__.py, src/mm1/model/__init__.py,
+src/mm1/view/__init__.py, src/mm1/controller/__init__.py.
 Interfaz: copia exactamente la interfaz pública de design.md.
-No toques src/mm1/metrics.py, simulation.py, scenarios.py, analysis.py,
-tables.py, charts.py, cli.py, app/ ni tests/.
+No toques los módulos de src/mm1/model/, src/mm1/view/ ni src/mm1/controller/,
+ni app/ ni tests/.
 Evidencia obligatoria: salida de "python -m pip install -r requirements.txt",
 "python -c \"import mm1\"", "python -m ruff check src" y "git status --short".
 ```
@@ -354,7 +374,7 @@ Evidencia obligatoria: salida de "python -m pip install -r requirements.txt",
 
 ```text
 Tarea: ejecuta las tareas del bloque 2 (3.1 a 3.6) de tasks.md.
-Archivos permitidos: src/mm1/simulation.py, src/mm1/cli.py,
+Archivos permitidos: src/mm1/model/simulation.py, src/mm1/controller/cli.py,
 tests/test_simulation.py, tests/test_smoke.py.
 Interfaz: run_mm1 y main con las firmas exactas de design.md.
 No toques metrics.py, scenarios.py, analysis.py, tables.py, charts.py, app/.
@@ -368,15 +388,16 @@ Evidencia obligatoria: salida de "python -m pytest tests/test_simulation.py -q",
 **Bloque 3 — teoría, escenarios y análisis (Richard)**
 
 ```text
-Tarea: ejecuta las tareas del bloque 3 (2.1 a 2.4, 4.1 a 4.5) de tasks.md.
-Archivos permitidos: src/mm1/metrics.py, src/mm1/scenarios.py,
-src/mm1/analysis.py, tests/test_metrics.py, tests/test_scenarios.py,
-tests/test_analysis.py.
+Tarea: ejecuta las tareas del bloque 3 (2.1 a 2.4, 4.1 a 4.7) de tasks.md.
+Archivos permitidos: src/mm1/model/metrics.py, src/mm1/model/scenarios.py,
+src/mm1/model/analysis.py, src/mm1/controller/study.py, tests/test_metrics.py,
+tests/test_scenarios.py, tests/test_analysis.py, tests/test_study.py.
 Interfaz: firmas exactas de design.md.
 Usa rho = lam / mu (decisión D1); no uses la fórmula impresa en la guía §5.1.
-No toques simulation.py, cli.py, tables.py, charts.py, app/, reports/.
+No toques src/mm1/model/simulation.py, src/mm1/controller/cli.py, src/mm1/view/,
+app/ ni reports/.
 Evidencia obligatoria: salida de
-"python -m pytest tests/test_metrics.py tests/test_scenarios.py tests/test_analysis.py -q"
+"python -m pytest tests/test_metrics.py tests/test_scenarios.py tests/test_analysis.py tests/test_study.py -q"
 con los valores analíticos L, Lq, W y Wq de los tres escenarios.
 ```
 
@@ -384,10 +405,11 @@ con los valores analíticos L, Lq, W y Wq de los tres escenarios.
 
 ```text
 Tarea: ejecuta las tareas del bloque 4 (5.1 a 5.5) de tasks.md.
-Archivos permitidos: src/mm1/tables.py, src/mm1/charts.py,
+Archivos permitidos: src/mm1/view/tables.py, src/mm1/view/charts.py,
 tests/test_tables.py, tests/test_charts.py, reports/figures/.
 Interfaz: firmas exactas de design.md; usa matplotlib con backend Agg.
-No toques metrics.py, simulation.py, scenarios.py, analysis.py, cli.py, app/.
+No toques src/mm1/model/ ni src/mm1/controller/, ni src/mm1/view/tables.py,
+ni src/mm1/view/charts.py.
 Evidencia obligatoria: salida de
 "python -m pytest tests/test_tables.py tests/test_charts.py -q" y el listado
 de archivos generados por "python -m mm1 --replications 5 --sim-time 300 --out outputs/".
@@ -397,14 +419,18 @@ de archivos generados por "python -m mm1 --replications 5 --sim-time 300 --out o
 
 ```text
 Tarea: ejecuta las tareas del bloque 5 (6.1 a 6.8) de tasks.md.
-Archivos permitidos: app/streamlit_app.py, tests/test_app.py, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
-Interfaz: helpers puros con las firmas exactas de design.md.
+Archivos permitidos: src/mm1/view/streamlit_view.py, app/streamlit_app.py, tests/test_app.py, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
+Interfaz: render() y los helpers puros con las firmas exactas de design.md
+(viven en src/mm1/view/streamlit_view.py; app/streamlit_app.py es solo la entrada fina).
+La vista no calcula: los resultados se los pide a mm1.controller.study.run_study,
+y las figuras y la tabla a mm1.view.charts y mm1.view.tables.
 El recurso debe tener deslizadores para λ y μ, aviso de estabilidad, botón de
 ejecución, animación de la cola, tabla teoría vs simulación y al menos dos
 gráficas interactivas.
 El documento debe responder las 10 preguntas de control de la guía §7 e incluir
 el enlace al video de demostración.
-No toques src/mm1/ ni tests/ fuera de tests/test_app.py.
+No toques src/mm1/model/, src/mm1/controller/, ni src/mm1/view/tables.py y
+src/mm1/view/charts.py; de tests/ solo tests/test_app.py.
 Evidencia obligatoria: salida de "python -m pytest tests/test_app.py -q",
 confirmación de que "streamlit run app/streamlit_app.py" arranca, y la lista de
 secciones y figuras del documento.
