@@ -1,0 +1,71 @@
+schema: spec-driven
+
+context: |
+  Project: APE 003 - "Simulación de un sistema de líneas de espera
+    M/M/1 mediante SimPy" (university group practice, 4 members:
+    J. Landazuri, R. Chamba, C. Soto, D. Rojas).
+  Tech stack: Python 3.x, SimPy, NumPy, Matplotlib, pandas, Streamlit,
+    pytest for tests, ruff for linting.
+  Architecture: one package `src/mm1` (metrics, simulation, scenarios,
+    analysis, tables, charts, cli) plus `app/streamlit_app.py`
+    (interactive resource). Generated CSV/PNG live in `outputs/`.
+  Testing: pytest, strict TDD (RED -> GREEN -> PRESERVE -> REFACTOR);
+    one test module per source module.
+  Style: code and SDD artifacts in English, human-facing documents in
+    Spanish, type hints on public signatures.
+
+strict_tdd: true
+
+testing:
+  runner: pytest
+  strict_tdd: true
+  test_command: "python -m pytest -q"
+  focused_test_command: "python -m pytest tests/test_<module>.py -q"
+  lint_command: "python -m ruff check src tests app"
+  coverage_command: "python -m pytest --cov=mm1 --cov-report=term-missing"
+  layers:
+    unit: true
+    integration: true
+    e2e: false
+  notes: >
+    `python -m mm1` (src/mm1/cli.py) is the only executable
+    orchestration entry point. The Streamlit resource is covered by
+    unit tests over its pure helper functions (theory table, stability
+    guard, chart payloads); no browser E2E runner is planned.
+
+rules:
+  proposal:
+    - State guide-to-spec traceability (S1-S15) explicitly.
+  specs:
+    - Use Given/When/Then for every scenario and RFC 2119 keywords
+      (MUST, SHALL, SHOULD, MAY).
+    - Keep the guide's verbatim strings and formulas inside the
+      requirement text.
+    - Never describe module internals; specs describe observable
+      behavior only.
+  design:
+    - Reproduce the frozen module map, ownership, and public
+      signatures exactly.
+    - Document the guide section 5.1 `rho = mu / lambda` typo and the
+      `rho = lambda / mu` decision.
+  tasks:
+    - Group by member slice with hierarchical numbering; one session
+      per task.
+    - Every task names its files, the interface it satisfies, its
+      acceptance check, and its spec ids.
+    - Keep the four member slices inside disjoint file sets so
+      parallel agents never collide.
+  apply:
+    guidelines:
+      - Follow the frozen interface contract in design.md with no
+        signature deviations.
+      - Touch only files owned by the active member slice.
+    tdd: true
+    test_command: "python -m pytest -q"
+  verify:
+    test_command: "python -m pytest -q"
+    lint_command: "python -m ruff check src tests app"
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas.

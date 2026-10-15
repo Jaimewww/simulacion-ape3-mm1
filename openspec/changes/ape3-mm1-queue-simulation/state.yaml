@@ -1,0 +1,47 @@
+change: ape3-mm1-queue-simulation
+title: "APE 003 — M/M/1 queue simulation with SimPy"
+artifact_store: openspec
+delivery_strategy: ask-on-risk
+strict_tdd: true
+scope: planning-only
+created: 2026-10-15
+updated: 2026-10-15
+
+phases:
+  init: completed
+  explore: skipped
+  propose: completed
+  spec: completed
+  design: completed
+  tasks: completed
+  apply: pending
+  verify: pending
+  archive: pending
+
+next_recommended: sdd-apply
+
+artifacts:
+  config: openspec/config.yaml
+  proposal: openspec/changes/ape3-mm1-queue-simulation/proposal.md
+  specs:
+    - openspec/changes/ape3-mm1-queue-simulation/specs/mm1-theory/spec.md
+    - openspec/changes/ape3-mm1-queue-simulation/specs/mm1-simulation/spec.md
+    - openspec/changes/ape3-mm1-queue-simulation/specs/mm1-reporting/spec.md
+    - openspec/changes/ape3-mm1-queue-simulation/specs/mm1-delivery/spec.md
+  design: openspec/changes/ape3-mm1-queue-simulation/design.md
+  tasks: openspec/changes/ape3-mm1-queue-simulation/tasks.md
+  supporting:
+    - docs/division-trabajo.md
+    - .atl/skill-registry.md
+
+notes:
+  - >-
+    S13: this session plans only; sdd-apply and sdd-verify are
+    deliberately not run.
+  - >-
+    Main specs under openspec/specs/ are populated by sdd-archive,
+    not by this session.
+  - >-
+    Delivery strategy ask-on-risk: the 400-line budget forecast is
+    High, so the orchestrator must resolve the chain strategy before
+    apply.
