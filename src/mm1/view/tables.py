@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .analysis import ScenarioSummary
+from ..model.analysis import ScenarioSummary
 
 if TYPE_CHECKING:
     import pandas  # pyright: ignore[reportMissingImports]

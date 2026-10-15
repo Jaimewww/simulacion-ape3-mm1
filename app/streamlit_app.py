@@ -1,27 +1,28 @@
-"""Interactive Streamlit resource for the APE 003 M/M/1 practice.
+"""Thin Streamlit entry point — composition root of the interactive flow.
 
 Owner: Domenica Rojas.
-Specs: S11 (interactive graphic resource), S15 (Streamlit as the chosen tool).
+Specs: S11 (interactive graphic resource), S15 (Streamlit), S16 (view layer).
 
-This file is the minimal landing page of the interactive resource. The controls
-(scenario sliders, charts and comparison tables) are Domenica's slice and are
-not implemented here yet.
+Kept deliberately thin so the documented command stays short:
+
+    streamlit run app/streamlit_app.py
+
+All rendering lives in ``mm1.view.streamlit_view``. Requires the package to be
+installed (``pip install -e .``) or ``src/`` on ``PYTHONPATH``; if neither is
+done the script stops with the exact command to run instead of a bare traceback.
 """
 
 from __future__ import annotations
 
-import streamlit as st  # pyright: ignore[reportMissingImports]
-
-
-def main() -> None:
-    """Render the Streamlit landing page."""
-    st.title("Simulación M/M/1 — APE 003")
-    st.info(
-        "Recurso interactivo en construcción. Aquí se presentarán los tres escenarios "
-        "(λ = 2.0, 2.5 y 2.9 con μ = 3.0), las gráficas del comportamiento de la cola y "
-        "de los tiempos de espera, y la comparación entre resultados teóricos y simulados."
-    )
-
+try:
+    from mm1.view.streamlit_view import render
+except ModuleNotFoundError as exc:  # pragma: no cover - actionable message
+    raise SystemExit(
+        "No se encontró el paquete 'mm1'. Ejecutá:\n"
+        "    pip install -e .\n"
+        "o bien:\n"
+        "    PYTHONPATH=src streamlit run app/streamlit_app.py"
+    ) from exc
 
 if __name__ == "__main__":
-    main()
+    render()

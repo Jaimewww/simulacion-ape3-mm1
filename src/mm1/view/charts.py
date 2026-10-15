@@ -13,8 +13,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from .analysis import ScenarioSummary
-from .simulation import ScenarioRun
+from ..model.analysis import ScenarioSummary
+from ..model.simulation import ScenarioRun
 
 
 # SPEC: S7 — queue-size evolution over simulated time.

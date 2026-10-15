@@ -2,15 +2,18 @@
 
 ## Technical Approach
 
-One Python package, `src/mm1`, built theory-first. `metrics.py` implements the
-guide §5.1 formulas and becomes the correctness oracle for the simulator.
-`simulation.py` runs the SimPy `λ >= μ` guard and the FIFO single-server process,
-emitting immutable records and a queue trace. `scenarios.py` declares the three
-guide scenarios as data and drives replicas. `analysis.py` aggregates replicas
-into summaries with CI95 and relative error. `tables.py` and `charts.py` render
-the guide's comparison table and figures. `cli.py` orchestrates the whole pipeline
-(`python -m mm1`), and `app/streamlit_app.py` exposes the same functions through an
-interactive Streamlit resource with no duplicated simulation logic.
+One Python package, `src/mm1`, built theory-first and structured as MVC (S16):
+
+| Layer | Package | Contents | Dependency rule |
+|-------|---------|----------|-----------------|
+| Model | `src/mm1/model/` | `metrics.py` (guide §5.1 formulas — the correctness oracle), `simulation.py` (SimPy FIFO single-server engine, immutable records, queue trace), `scenarios.py` (the three guide scenarios as data + replicas), `analysis.py` (aggregation, CI95, relative error) | No rendering, no I/O. MUST NOT import `mm1.view` or `mm1.controller`. |
+| View | `src/mm1/view/` | `tables.py` (comparison table → DataFrame/CSV/LaTeX), `charts.py` (Matplotlib figures), `streamlit_view.py` (the interactive page and its pure helpers) | Renders only; MUST NOT compute domain results. Imports `mm1.model`, and when it needs results it asks `mm1.controller` instead of computing them. |
+| Controller | `src/mm1/controller/` | `study.py` (the `run_study` application service), `cli.py` (`python -m mm1`) | The only layer allowed to know more than one layer; it drives the model and triggers the views. |
+
+`controller/study.py` exists so the CLI and the Streamlit page call **one** service:
+the figures in the document and the live resource cannot diverge. `app/streamlit_app.py`
+stays a thin entry point (composition root) so the documented command remains
+`streamlit run app/streamlit_app.py`.
 
 Satisfies the proposal approach for `mm1-theory`, `mm1-simulation`,
 `mm1-reporting` and `mm1-delivery`.
@@ -29,41 +32,57 @@ Satisfies the proposal approach for `mm1-theory`, `mm1-simulation`,
 | D8 | `python -m mm1` as the single orchestration entry point | Scripts per stage; Makefile | The demo video and the report need one reproducible command; CLI flags cover the manual single-`lam`/`mu` probe. |
 | D9 | Four disjoint member slices, one PR each | One shared branch per feature area | S14 needs four AI agents working in parallel with no merge conflicts; each slice owns whole files. |
 | D10 | App helpers as importable pure functions tested without Streamlit | Streamlit AppTest E2E only | No browser runner is planned; pure helpers (`theory_row`, `stability_message`, `scenario_table`, `build_queue_figure`, `build_comparison_figure`) are unit-testable. |
-| D11 | Add `src/mm1/__main__.py` as a 3-line shim (`from mm1.cli import main; raise SystemExit(main())`), and require an editable install | Declare a `mm1` console script in `pyproject.toml`; drop `python -m mm1`; put the dispatch inside `__init__.py` | The frozen map lists only `__init__.py` and `cli.py`, but `python -m mm1` (frozen entry point) is only executable through `mm1/__main__.py`, and `src/` is only importable outside pytest after `pip install -e .` (observed: `.venv/bin/python -m mm1 --help` fails with `No module named mm1` in the current skeleton, which has neither). This is the smallest addition that keeps the frozen entry point working; the dispatch logic still lives in `cli.main`, so the public contract is unchanged. Flagged as an open question for the orchestrator. |
+| D11 | Add `src/mm1/__main__.py` as a 3-line shim (`from mm1.controller.cli import main; raise SystemExit(main())`), and require an editable install | Declare a `mm1` console script in `pyproject.toml`; drop `python -m mm1`; put the dispatch inside `__init__.py` | The frozen map lists only `__init__.py` and `cli.py`, but `python -m mm1` (frozen entry point) is only executable through `mm1/__main__.py`, and `src/` is only importable outside pytest after `pip install -e .` (observed: `.venv/bin/python -m mm1 --help` fails with `No module named mm1` in the current skeleton, which has neither). This is the smallest addition that keeps the frozen entry point working; the dispatch logic still lives in `cli.main`, so the public contract is unchanged. Flagged as an open question for the orchestrator. |
 | D12 | Add `tests/test_app.py` for the app helpers | Put app-helper tests in `tests/test_smoke.py`; no automated app coverage | The frozen test list has no app module, but strict TDD applies to the Streamlit slice and `tests/test_smoke.py` belongs to another member's slice, so it cannot hold app tests without breaking parallel ownership. `tests/test_app.py` is the smallest addition that keeps ownership disjoint and the helpers covered. Flagged as an open question for the orchestrator. |
+| D13 | Structure the package as MVC: `model/`, `view/`, `controller/` (S16) | Flat `src/mm1/*.py`; layered but unnamed; MVVM | The user asked for MVC by name (S16). Naming the layers makes the dependency direction checkable (`model` never imports `view`) and gives every member one unambiguous layer. Streamlit's script is simultaneously the input surface and the renderer, so the page lives in `view/` and calls the shared `controller.run_study` service instead of computing; that adaptation is logged as L10 and MUST be explained in the oral defense. |
+| D14 | `StudyResult(runs, summaries)` carries model data only | Return a `pandas.DataFrame`; return a rendered dict | Keeps the controller free of any view or third-party dependency, so `mm1.view.tables` stays the only place that builds a DataFrame and the MVC dependency rule is mechanically true. |
 
 ## Data Flow
 
-    SCENARIOS (scenarios.py)
+    model/scenarios.SCENARIOS
         │
-        └──▶ run_scenarios ──▶ [ScenarioRun] ──┬──▶ charts.plot_queue_evolution (per run)
-                                               │    charts.plot_wait_times      (per run)
-                                               │
-                                               └──▶ analysis.summarize ──▶ [ScenarioSummary]
-                                                                              │
-                       theory: theoretical_metrics ◀── oracle ────────────────┤
-                                                                              ├──▶ tables.comparison_dataframe ──▶ CSV + LaTeX
-                                                                              └──▶ charts.plot_theory_vs_sim
-                                                                                   charts.plot_scenario_comparison
+        └──▶ model.run_scenarios ──▶ [ScenarioRun] ──┬──▶ view.charts.plot_queue_evolution (per run)
+                                                     │    view.charts.plot_wait_times      (per run)
+                                                     │
+                                                     └──▶ model.summarize ──▶ [ScenarioSummary]
+                                                                                   │
+                     model.theoretical_metrics ◀── oracle ────────────────────────┤
+                                                                                   ├──▶ view.tables.comparison_dataframe ──▶ CSV + LaTeX
+                                                                                   └──▶ view.charts.plot_theory_vs_sim
+                                                                                        view.charts.plot_scenario_comparison
 
-    python -m mm1 (cli.py) ──wires all of the above──▶ outputs/  (exit code 0)
-    app/streamlit_app.py   ──sliders(lam, mu)──▶ run_mm1 + theoretical_metrics
-                           ──▶ live table + queue animation + interactive charts
+    controller/study.run_study ──▶ StudyResult(runs, summaries)   ← the one shared service
+            ▲                                        ▲
+            │                                        │
+    controller/cli.main (python -m mm1)      view/streamlit_view.render()
+            └──▶ run_study + view.tables/charts ──▶ outputs/   └──▶ run_study + view.tables/charts
+                                                                      └──▶ the live page (final deliverable, S18)
+
+    app/streamlit_app.py ──thin entry (composition root)──▶ view.streamlit_view.render()
+
+Dependency direction, mechanically checkable: `model` imports no other layer;
+`view` imports `model` (and `controller` only through the page); `controller`
+imports `model` and triggers `view`. No cycle.
 
 ## File Changes
 
 | File | Action | Description |
 |------|--------|-------------|
-| `src/mm1/__init__.py` | Create | Re-export the public API of the six modules |
+| `src/mm1/__init__.py` | Create | Re-export the public API of the three layers (25 names) |
+| `src/mm1/model/__init__.py` | Create | Model layer facade (the `M`) |
+| `src/mm1/view/__init__.py` | Create | View layer facade (the `V`); excludes `streamlit_view` so `import mm1` stays dependency-free |
+| `src/mm1/controller/__init__.py` | Create | Controller layer facade (the `C`) |
 | `src/mm1/__main__.py` | Create | Minimal shim so `python -m mm1` reaches `cli.main` (decision D11) |
-| `src/mm1/metrics.py` | Create | `TheoryMetrics`, `utilization`, `is_stable`, `theoretical_metrics` |
-| `src/mm1/simulation.py` | Create | `CustomerRecord`, `ScenarioRun`, `run_mm1` (SimPy engine) |
-| `src/mm1/scenarios.py` | Create | `Scenario`, `SCENARIOS`, `run_scenarios` |
-| `src/mm1/analysis.py` | Create | `ScenarioSummary`, `confidence_interval`, `relative_error`, `summarize` |
-| `src/mm1/tables.py` | Create | `comparison_dataframe`, `write_csv`, `to_latex` |
-| `src/mm1/charts.py` | Create | Four plot functions plus `generate_all` |
-| `src/mm1/cli.py` | Create | `main` entry point with `--lam/--mu/--scenarios/--replications/--sim-time/--seed/--warmup/--out` |
-| `app/streamlit_app.py` | Create | Streamlit resource (sliders, guard, animation, live table, charts) |
+| `src/mm1/model/metrics.py` | Create | `TheoryMetrics`, `utilization`, `is_stable`, `theoretical_metrics` |
+| `src/mm1/model/simulation.py` | Create | `CustomerRecord`, `ScenarioRun`, `run_mm1` (SimPy engine) |
+| `src/mm1/model/scenarios.py` | Create | `Scenario`, `SCENARIOS`, `run_scenarios` |
+| `src/mm1/model/analysis.py` | Create | `ScenarioSummary`, `confidence_interval`, `relative_error`, `summarize` |
+| `src/mm1/view/tables.py` | Create | `comparison_dataframe`, `write_csv`, `to_latex` |
+| `src/mm1/view/charts.py` | Create | Four plot functions plus `generate_all` |
+| `src/mm1/controller/cli.py` | Create | `main` entry point with `--lam/--mu/--scenarios/--replications/--sim-time/--seed/--warmup/--out` |
+| `src/mm1/controller/study.py` | Create | `StudyResult`, `run_study` — the service shared by the CLI and the web page (D13, D14) |
+| `src/mm1/view/streamlit_view.py` | Create | `render()` plus the pure app helpers (decision D10) |
+| `app/streamlit_app.py` | Create | Thin Streamlit entry point (composition root) that calls `view.streamlit_view.render()` |
 | `tests/test_*.py` | Create | One pytest module per source module, plus `tests/test_app.py` for the app helpers (decision D12) |
 | `reports/figures/**` | Create | Figures used by the document (owner: Cael Soto) |
 | `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | Create | Technical document, demo video link, defense notes (owner: Domenica Rojas) |
@@ -75,7 +94,7 @@ Satisfies the proposal approach for `mm1-theory`, `mm1-simulation`,
 Frozen public signatures — no deviations; internal helpers are free.
 
 ```python
-# src/mm1/metrics.py
+# src/mm1/model/metrics.py
 @dataclass(frozen=True)
 class TheoryMetrics:
     rho: float; L: float; Lq: float; W: float; Wq: float
@@ -84,7 +103,7 @@ def utilization(lam: float, mu: float) -> float
 def is_stable(lam: float, mu: float) -> bool
 def theoretical_metrics(lam: float, mu: float) -> TheoryMetrics
 
-# src/mm1/simulation.py
+# src/mm1/model/simulation.py
 @dataclass(frozen=True)
 class CustomerRecord:
     customer_id: int; arrival_time: float; service_start: float
@@ -103,7 +122,7 @@ def run_mm1(lam: float, mu: float, sim_time: float = 1000.0,
             seed: int | None = None, scenario: int = 0,
             warmup: float = 0.0) -> ScenarioRun
 
-# src/mm1/scenarios.py
+# src/mm1/model/scenarios.py
 @dataclass(frozen=True)
 class Scenario:
     id: int; lam: float; mu: float; label: str; condition: str
@@ -112,7 +131,7 @@ SCENARIOS: tuple[Scenario, ...]   # the 3 guide scenarios, ids 1..3
 def run_scenarios(replications: int = 30, sim_time: float = 1000.0,
                   base_seed: int = 42, warmup: float = 0.0) -> list[ScenarioRun]
 
-# src/mm1/analysis.py
+# src/mm1/model/analysis.py
 @dataclass(frozen=True)
 class ScenarioSummary:
     scenario: int; lam: float; mu: float; replications: int
@@ -127,12 +146,12 @@ def confidence_interval(values: Sequence[float], confidence: float = 0.95) -> tu
 def relative_error(simulated: float, theoretical: float) -> float
 def summarize(runs: Sequence[ScenarioRun]) -> list[ScenarioSummary]
 
-# src/mm1/tables.py
+# src/mm1/view/tables.py
 def comparison_dataframe(summaries: Sequence[ScenarioSummary]) -> "pandas.DataFrame"
 def write_csv(df: "pandas.DataFrame", path: str | Path) -> Path
 def to_latex(df: "pandas.DataFrame", path: str | Path) -> Path
 
-# src/mm1/charts.py
+# src/mm1/view/charts.py
 def plot_queue_evolution(run: ScenarioRun, path: str | Path) -> Path
 def plot_wait_times(run: ScenarioRun, path: str | Path) -> Path
 def plot_theory_vs_sim(summaries: Sequence[ScenarioSummary], path: str | Path) -> Path
@@ -140,14 +159,25 @@ def plot_scenario_comparison(summaries: Sequence[ScenarioSummary], path: str | P
 def generate_all(runs: Sequence[ScenarioRun], summaries: Sequence[ScenarioSummary],
                  out_dir: str | Path) -> list[Path]
 
-# src/mm1/cli.py
+# src/mm1/controller/study.py
+@dataclass(frozen=True)
+class StudyResult:
+    runs: tuple[ScenarioRun, ...]; summaries: tuple[ScenarioSummary, ...]
+
+def run_study(replications: int = 30, sim_time: float = 1000.0,
+              base_seed: int = 42, warmup: float = 0.0) -> StudyResult
+
+# src/mm1/controller/cli.py
 def main(argv: Sequence[str] | None = None) -> int   # entry point: python -m mm1
 ```
 
-Additive app contract (internal to `app/`, not part of the package API):
+View contract (internal to `src/mm1/view/`, not part of the package API: importing
+it pulls in Streamlit, and `import mm1` MUST stay dependency-free). `app/streamlit_app.py`
+only calls `render()`.
 
 ```python
-# app/streamlit_app.py
+# src/mm1/view/streamlit_view.py
+def render() -> None
 def theory_row(lam: float, mu: float) -> dict[str, float]
 def stability_message(lam: float, mu: float) -> str
 def scenario_table(summaries: Sequence[ScenarioSummary]) -> "pandas.DataFrame"
@@ -159,11 +189,11 @@ def build_comparison_figure(summaries: Sequence[ScenarioSummary]) -> "matplotlib
 
 | Member | Files | Spec ids |
 |--------|-------|----------|
-| Jaime Landazuri | `src/mm1/simulation.py`, `src/mm1/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` | S4, S7, S12, S13 |
-| Richard Chamba | `src/mm1/metrics.py`, `src/mm1/scenarios.py`, `src/mm1/analysis.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py` | S3, S5, S6 |
-| Cael Soto | `src/mm1/tables.py`, `src/mm1/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` | S6, S7 |
-| Domenica Rojas | `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | S8, S9, S11, S15 |
-| Orchestrator (foundation) | `src/mm1/__init__.py`, `src/mm1/__main__.py`, `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md` | S2, S10, S12 |
+| Jaime Landazuri | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` | S4, S7, S12, S13 |
+| Richard Chamba | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py` | S3, S5, S6, S16 |
+| Cael Soto | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` | S6, S7 |
+| Domenica Rojas | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | S8, S9, S11, S15, S18 |
+| Orchestrator (foundation) | `src/mm1/__init__.py`, `src/mm1/__main__.py`, `src/mm1/model/__init__.py`, `src/mm1/view/__init__.py`, `src/mm1/controller/__init__.py`, `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md`, `CONTRIBUTING.md` | S2, S10, S12, S16, S17 |
 
 ## Testing Strategy
 

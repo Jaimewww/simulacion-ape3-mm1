@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 
-from mm1.cli import main
+from mm1.controller.cli import main
 
 if __name__ == "__main__":
     sys.exit(main())

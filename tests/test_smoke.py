@@ -17,54 +17,54 @@ import pytest
 import mm1
 
 SUBMODULES = (
-    "mm1.metrics",
-    "mm1.simulation",
-    "mm1.scenarios",
-    "mm1.analysis",
-    "mm1.tables",
-    "mm1.charts",
-    "mm1.cli",
+    "mm1.model.metrics",
+    "mm1.model.simulation",
+    "mm1.model.scenarios",
+    "mm1.model.analysis",
+    "mm1.view.tables",
+    "mm1.view.charts",
+    "mm1.controller.cli",
 )
 
 EXPECTED_PARAMETERS = {
-    "mm1.metrics": {
+    "mm1.model.metrics": {
         "utilization": ("lam", "mu"),
         "is_stable": ("lam", "mu"),
         "theoretical_metrics": ("lam", "mu"),
     },
-    "mm1.simulation": {
+    "mm1.model.simulation": {
         "run_mm1": ("lam", "mu", "sim_time", "seed", "scenario", "warmup"),
     },
-    "mm1.scenarios": {
+    "mm1.model.scenarios": {
         "run_scenarios": ("replications", "sim_time", "base_seed", "warmup"),
     },
-    "mm1.analysis": {
+    "mm1.model.analysis": {
         "confidence_interval": ("values", "confidence"),
         "relative_error": ("simulated", "theoretical"),
         "summarize": ("runs",),
     },
-    "mm1.tables": {
+    "mm1.view.tables": {
         "comparison_dataframe": ("summaries",),
         "write_csv": ("df", "path"),
         "to_latex": ("df", "path"),
     },
-    "mm1.charts": {
+    "mm1.view.charts": {
         "plot_queue_evolution": ("run", "path"),
         "plot_wait_times": ("run", "path"),
         "plot_theory_vs_sim": ("summaries", "path"),
         "plot_scenario_comparison": ("summaries", "path"),
         "generate_all": ("runs", "summaries", "out_dir"),
     },
-    "mm1.cli": {
+    "mm1.controller.cli": {
         "main": ("argv",),
     },
 }
 
 EXPECTED_DATACLASS_FIELDS = {
-    "mm1.metrics": {
+    "mm1.model.metrics": {
         "TheoryMetrics": ("rho", "L", "Lq", "W", "Wq"),
     },
-    "mm1.simulation": {
+    "mm1.model.simulation": {
         "CustomerRecord": (
             "customer_id",
             "arrival_time",
@@ -90,10 +90,10 @@ EXPECTED_DATACLASS_FIELDS = {
             "queue_trace",
         ),
     },
-    "mm1.scenarios": {
+    "mm1.model.scenarios": {
         "Scenario": ("id", "lam", "mu", "label", "condition"),
     },
-    "mm1.analysis": {
+    "mm1.model.analysis": {
         "ScenarioSummary": (
             "scenario",
             "lam",
@@ -156,4 +156,4 @@ def test_dataclass_fields(module_name: str, class_name: str) -> None:
 
 def test_scenarios_catalogue_is_a_tuple() -> None:
     """``SCENARIOS`` exists and is a tuple (its contents belong to Richard Chamba)."""
-    assert isinstance(importlib.import_module("mm1.scenarios").SCENARIOS, tuple)
+    assert isinstance(importlib.import_module("mm1.model.scenarios").SCENARIOS, tuple)
