@@ -157,3 +157,109 @@ def test_dataclass_fields(module_name: str, class_name: str) -> None:
 def test_scenarios_catalogue_is_a_tuple() -> None:
     """``SCENARIOS`` exists and is a tuple (its contents belong to Richard Chamba)."""
     assert isinstance(importlib.import_module("mm1.model.scenarios").SCENARIOS, tuple)
+
+
+# --------------------------------------------------------------------------- #
+# CLI behaviour (stage 4, tasks.md 3.3)
+# --------------------------------------------------------------------------- #
+
+SINGLE_RUN_ARGS = ["--lam", "2.0", "--mu", "3.0", "--sim-time", "200", "--seed", "42"]
+FROZEN_FLAGS = (
+    "--lam",
+    "--mu",
+    "--scenarios",
+    "--replications",
+    "--sim-time",
+    "--seed",
+    "--warmup",
+    "--out",
+)
+
+
+@pytest.fixture()
+def cli():
+    """The CLI module under test."""
+    return importlib.import_module("mm1.controller.cli")
+
+
+def test_cli_single_run_succeeds(cli, capsys) -> None:
+    """A stable single-scenario probe exits 0 and compares theory with simulation."""
+    code = cli.main([*SINGLE_RUN_ARGS])
+    output = capsys.readouterr().out
+
+    assert code == 0
+    assert "teórica" in output and "simulada" in output
+    assert "Wq" in output and "utilización" in output and "semilla" in output
+
+
+def test_cli_refuses_unstable_input(cli, tmp_path, capsys) -> None:
+    """``lam >= mu`` prints the guide message, returns non-zero and writes nothing."""
+    code = cli.main(["--lam", "3.0", "--mu", "3.0", "--out", str(tmp_path)])
+    output = capsys.readouterr().out
+
+    assert code != 0
+    assert "El sistema no es estable" in output
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_cli_reports_invalid_rates(cli, capsys) -> None:
+    """A zero rate is reported as a message instead of a traceback."""
+    code = cli.main(["--lam", "0", "--mu", "3.0"])
+
+    assert code != 0
+    assert "positivas" in capsys.readouterr().out
+
+
+def test_cli_requires_both_rates(cli) -> None:
+    """Passing only one of ``--lam``/``--mu`` is a usage error."""
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main(["--lam", "2.0"])
+
+    assert exit_info.value.code == 2
+
+
+def test_cli_rejects_mixing_modes(cli) -> None:
+    """``--scenarios`` cannot be combined with the single-run flags."""
+    with pytest.raises(SystemExit):
+        cli.main(["--scenarios", "--lam", "2.0", "--mu", "3.0"])
+
+
+def test_cli_exposes_every_frozen_flag(cli, capsys) -> None:
+    """``--help`` exits 0 and documents the whole frozen flag surface."""
+    with pytest.raises(SystemExit) as exit_info:
+        cli.main(["--help"])
+
+    assert exit_info.value.code == 0
+    help_text = capsys.readouterr().out
+    for flag in FROZEN_FLAGS:
+        assert flag in help_text
+
+
+def test_cli_scenarios_mode_uses_the_shared_service(cli, monkeypatch, tmp_path) -> None:
+    """Scenarios mode goes through ``controller.study.run_study`` with parsed options."""
+    seen: dict[str, object] = {}
+
+    def fake_run_study(**kwargs: object):
+        seen.update(kwargs)
+        raise RuntimeError("run_study reached")
+
+    monkeypatch.setattr(cli, "run_study", fake_run_study)
+    with pytest.raises(RuntimeError, match="run_study reached"):
+        cli.main(
+            [
+                "--scenarios",
+                "--replications",
+                "3",
+                "--sim-time",
+                "100",
+                "--out",
+                str(tmp_path),
+            ]
+        )
+
+    assert seen == {
+        "replications": 3,
+        "sim_time": 100.0,
+        "base_seed": 42,
+        "warmup": 0.0,
+    }
