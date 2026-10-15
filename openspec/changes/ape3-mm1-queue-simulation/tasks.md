@@ -81,7 +81,7 @@ Note: `python -m mm1` and `import mm1` outside pytest need an editable install
 - [ ] 6.3 `app/streamlit_app.py` (PRESERVE): one test proving the app never runs a simulation for unstable input (guard returns before `run_mm1`). Acceptance: `python -m pytest tests/test_app.py -q` passes. Specs: S11, S15.
 - [ ] 6.4 `reports/` document skeleton: title, objectives, theoretical model with the `rho = lambda / mu` deviation note (D1), methodology/procedure, closed with the 3-scenario setup. Acceptance: sections 1–3 present and the deviation note cites design decision D1. Specs: S3, S9.
 - [ ] 6.5 `reports/` results section: theory-vs-simulation table for the three scenarios plus the generated figures and the `python -m mm1 --out outputs` command that reproduces them. Acceptance: every figure referenced exists in `reports/figures/` and is produced by the command. Specs: S6, S7, S9.
-- [ ] 6.6 `reports/` control questions: answers to the 10 guide §7 questions, three of them quoted verbatim. Acceptance: 10 numbered answers, each citing simulated evidence. Specs: S8.
+- [ ] 6.6 `reports/` control questions: answers to the 10 guide §7 questions listed verbatim in `docs/division-trabajo.md`, three of them quoted in the spec. Acceptance: 10 numbered answers, each citing simulated evidence. Specs: S8.
 - [ ] 6.7 `reports/` conclusions tied to the practice objectives and to guide §6 expected behavior (wait time and queue grow as `lambda` approaches `mu`). Acceptance: each objective has a conclusion with numbers. Specs: S7, S9.
 - [ ] 6.8 `reports/` demo video link + oral-defense notes (model, code walkthrough, expected questions). Acceptance: video URL present and reachable, defense notes reference `design.md` decisions. Specs: S9.
 

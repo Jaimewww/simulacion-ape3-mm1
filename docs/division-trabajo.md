@@ -265,7 +265,19 @@ def build_comparison_figure(summaries) -> "matplotlib.figure.Figure"
 - Procedimiento y resultados con evidencias: tabla comparativa, figuras y el
   comando `python -m mm1 --out outputs/` que las reproduce.
 - Respuestas a las **10 preguntas de control** de la guía §7, cada una con la
-  evidencia simulada que la respalda.
+  evidencia simulada que la respalda. Las 10 son estas (textuales de la guía):
+
+  1. ¿Qué representa el modelo M/M/1?
+  2. ¿Qué representan λ y μ?
+  3. ¿Por qué debe cumplirse λ < μ para que el sistema sea estable?
+  4. ¿Qué significa la utilización ρ?
+  5. ¿Cuál es la diferencia entre W y Wq?
+  6. ¿Cuál es la diferencia entre L y Lq?
+  7. ¿Por qué SimPy utiliza una distribución exponencial para generar los tiempos?
+  8. ¿Qué sucede con la cola cuando λ se aproxima a μ?
+  9. ¿Por qué los resultados simulados pueden ser diferentes de los resultados teóricos?
+  10. ¿Qué ocurriría si λ fuera mayor que μ?  (la guía lo imprime con `??`; se
+      responde una sola vez)
 - Conclusiones relacionadas con los tres objetivos de la práctica y con el
   comportamiento esperado de la guía §6 (el tiempo de espera y la cola crecen
   cuando λ se acerca a μ).
