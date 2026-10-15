@@ -1,0 +1,29 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Local agent runtime state
+.atl/
+odd/
+
+# SDD plan is intentionally tracked (openspec/ is NOT ignored)
+
+# Generated outputs (keep the directory, ignore its contents)
+outputs/*
+!outputs/.gitkeep

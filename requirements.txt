@@ -1,0 +1,9 @@
+# Runtime and development dependencies for the APE 003 M/M/1 queue simulation.
+# Kept in sync with [project].dependencies in pyproject.toml.
+simpy>=4.1
+numpy>=1.26
+matplotlib>=3.8
+pandas>=2.1
+streamlit>=1.30
+pytest>=8.0
+ruff>=0.6
