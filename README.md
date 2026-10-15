@@ -184,15 +184,43 @@ parte del entregable de Domenica Rojas.
 
 ### Línea de comandos (CLI)
 
-El plan SDD prevé una única entrada de orquestación a nivel de repositorio:
+La CLI tiene dos modos. `python -m mm1 --help` lista la superficie completa.
+
+**Una corrida** (`--lam` y `--mu`). Corre una sola simulación y muestra los valores
+simulados junto a los teóricos: es la prueba en vivo para la defensa oral y el modo
+que ya funciona.
 
 ```bash
-python -m mm1
+python -m mm1 --lam 2.0 --mu 3.0 --sim-time 2000 --seed 42
 ```
 
-**La CLI todavía no está implementada.** `src/mm1/controller/cli.py` solo contiene el *stub*
-de `main`; su lógica y sus opciones se definen en el plan SDD (ver *Enlaces
-útiles*) y aún no se han escrito. Por ahora este comando no produce resultados.
+```text
+Corrida única M/M/1   λ=2  μ=3  ρ_teórica=0.6667
+métrica            teórica    simulada  error rel.
+Wq                  0.6667      0.7048      5.73%
+W                   1.0000      1.0336      3.36%
+Lq                  1.3333      1.4003      5.02%
+L                   2.0000      2.0533      2.67%
+utilización         0.6667      0.6531      2.03%
+clientes atendidos=3973  sim_time=2000  warmup=0  semilla=42
+```
+
+Si el sistema no es estable imprime `El sistema no es estable` y sale con código 2,
+tal como pide la guía.
+
+**Los tres escenarios de la guía** (modo por defecto). Corre el estudio completo y
+exporta la tabla comparativa y las figuras a `--out`:
+
+```bash
+python -m mm1 --replications 30 --sim-time 1000 --out outputs/
+```
+
+> **Estado de este segundo modo:** ya está cableado a `controller.study.run_study`,
+> pero **todavía no puede correr** porque sus colaboradores son de etapas
+> posteriores: `run_study` (etapa 7, Richard Chamba), `comparison_dataframe` y
+> `generate_all` (etapas 8 y 9, Cael Soto). Hoy el comando falla nombrando al
+> responsable. Cuando esas etapas se integren **la CLI no se toca**: ya delega en
+> el servicio compartido.
 
 > El paquete usa una disposición `src/`. Para ejecutarlo sin instalarlo, activa el
 > entorno virtual e instálalo en modo editable (`pip install -e .`) o exporta
@@ -208,9 +236,10 @@ pytest
 
 La configuración en `pyproject.toml` busca las pruebas en `tests/` y agrega `src/`
 al *path* de importación, por lo que `pytest` funciona desde la raíz del
-repositorio. En el andamiaje solo existe `tests/test_smoke.py` (prueba
-estructural). La etapa de teoría agrega `tests/test_metrics.py`, con 17 pruebas
-de comportamiento. Cada integrante agrega sus pruebas primero (enfoque
+repositorio. Las pruebas están repartidas así: `tests/test_smoke.py` cubre la
+estructura congelada y el comportamiento del CLI (38 pruebas), `tests/test_metrics.py`
+cubre la teoría (17) y `tests/test_simulation.py` cubre el motor SimPy (23). En total
+**78 pruebas**. Cada integrante agrega sus pruebas primero (enfoque
 *test-first*) en su archivo correspondiente.
 
 ## Reparto de trabajo
@@ -235,7 +264,8 @@ El detalle de tareas, dependencias y criterios de aceptación está en
 | Entregable | Estado |
 | --- | --- |
 | Modelo teórico M/M/1 (`model/metrics.py`) | **✅ Listo** — Richard Chamba; 17 pruebas pasan |
-| Motor M/M/1 en SimPy (`model/simulation.py`) | **Pendiente** (stub con firma congelada) |
+| Motor M/M/1 en SimPy (`model/simulation.py`) | **✅ Listo** — Jaime Landazuri; 23 pruebas pasan y el motor es consistente contra la teoría |
+| CLI de una corrida (`python -m mm1 --lam … --mu …`) | **✅ Listo** — Jaime Landazuri; el modo multi-escenario espera las etapas 7, 8 y 9 |
 | Gráficas del comportamiento de la cola y de los tiempos de espera | **Pendiente** (`charts.py`) |
 | Tabla comparativa teórico vs. simulado | **Pendiente** (`tables.py`, `analysis.py`) |
 | Documento técnico | **Pendiente** (`reports/`) |
@@ -243,8 +273,10 @@ El detalle de tareas, dependencias y criterios de aceptación está en
 | Recurso interactivo (Streamlit) | **Pendiente** (`src/mm1/view/streamlit_view.py` + entrada `app/streamlit_app.py`) |
 | Defensa oral y demostración | **Pendiente** |
 
-Los valores teóricos aparecen en la sección *Escenarios*. La simulación **aún no
-se ha ejecutado**; los resultados simulados y las comparaciones siguen pendientes.
+Los valores teóricos aparecen en la sección *Escenarios*. El motor ya corre: la CLI
+de una corrida compara teoría y simulación en vivo. Lo que sigue pendiente son los
+resultados definitivos del documento (tabla comparativa y figuras del reporte), que
+dependen de las etapas 5 a 9, y por eso no se incluyen números aquí.
 
 ## Enlaces útiles
 

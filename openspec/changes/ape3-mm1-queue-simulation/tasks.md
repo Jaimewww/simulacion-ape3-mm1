@@ -22,7 +22,7 @@ Chain strategy: stacked-to-main
 |------|------|-----------|----------------------|-----------------|-------------------|
 | 1 | Foundation: packaging + MVC package shell (Phase 1) | PR 1 | `python -m pytest -q` | `python -m pip install -e . && python -m mm1 --help` | `requirements.txt`, `pyproject.toml`, `src/mm1/__init__.py`, `src/mm1/__main__.py`, `src/mm1/model/__init__.py`, `src/mm1/view/__init__.py`, `src/mm1/controller/__init__.py`, `CONTRIBUTING.md` |
 | 2 | Theory oracle (Phase 2) | PR 2 | `python -m pytest tests/test_metrics.py -q` | `python -c "from mm1.model.metrics import theoretical_metrics as t; print(t(2.0,3.0))"` | `src/mm1/model/metrics.py`, `tests/test_metrics.py` |
-| 3 | Simulation engine + CLI (Phase 3) | PR 3 | `python -m pytest tests/test_simulation.py tests/test_smoke.py -q` | `python -m mm1 --replications 5 --sim-time 300 --out outputs/` | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, both test modules |
+| 3 | Simulation engine + CLI (Phase 3) | PR 3 | `python -m pytest tests/test_simulation.py tests/test_smoke.py -q` | `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 2000 --seed 42` | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, both test modules |
 | 4 | Scenarios + analysis + study service (Phase 4) | PR 4 | `python -m pytest tests/test_scenarios.py tests/test_analysis.py tests/test_study.py -q` | `python -c "from mm1.controller.study import run_study; r = run_study(replications=3, sim_time=100.0); print(len(r.runs), len(r.summaries))"` | `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, all three test modules |
 | 5 | Tables + charts (Phase 5) | PR 5 | `python -m pytest tests/test_tables.py tests/test_charts.py -q` | `python -m mm1 --replications 5 --sim-time 300 --out outputs/ && ls outputs/` | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, both test modules |
 | 6 | Streamlit resource + document (Phase 6) | PR 6 | `python -m pytest tests/test_app.py -q` | `streamlit run app/streamlit_app.py` (manual, no browser runner) | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
@@ -64,10 +64,11 @@ Note: `python -m mm1` and `import mm1` outside pytest need an editable install
 
 - [x] 3.1 `tests/test_simulation.py` (RED): single-server serialization, FIFO order, record identities (`wait_time == service_start - arrival_time`), non-empty monotonic `queue_trace`, seed determinism, warmup exclusion with full `n_customers`, `ValueError` when `lam >= mu`. Interface: `run_mm1`, `CustomerRecord`, `ScenarioRun`. Acceptance: `python -m pytest tests/test_simulation.py -q` fails before 3.2. Specs: S4, S6, S7.
 - [x] 3.2 `src/mm1/model/simulation.py` (GREEN): SimPy environment, `capacity = 1`, exponential arrivals/service, FIFO, queue trace, statistics over `arrival_time >= warmup`. Interface: design.md signatures. Acceptance: `python -m pytest tests/test_simulation.py -q` passes. Specs: S4, S7.
-- [ ] 3.3 `tests/test_smoke.py` (RED→GREEN): `python -c "import mm1"` equivalent plus `cli.main(["--lam", "2.0", "--mu", "3.0", "--out", str(tmp_path), "--sim-time", "200"]) == 0`, `main(["--lam", "3.0", "--mu", "3.0"]) != 0` with stdout `El sistema no es estable`, and that no file is written on refusal. Interface: `main(argv) -> int`. Acceptance: `python -m pytest tests/test_smoke.py -q` passes. Specs: S4, S12, S13.
-- [ ] 3.4 `src/mm1/controller/cli.py` (GREEN): `argparse` with `--lam --mu --scenarios --replications --sim-time --seed --warmup --out`; prints `El sistema no es estable` for `lam >= mu`; exit `0` on success. Interface: `main(argv: Sequence[str] | None = None) -> int`. Acceptance: `python -m mm1 --replications 5 --sim-time 300 --out outputs/` exits 0. Specs: S4, S6, S7.
+- [x] 3.3 `tests/test_smoke.py` (RED→GREEN): `python -c "import mm1"` equivalent plus `cli.main(["--lam", "2.0", "--mu", "3.0", "--out", str(tmp_path), "--sim-time", "200"]) == 0`, `main(["--lam", "3.0", "--mu", "3.0"]) != 0` with stdout `El sistema no es estable`, and that no file is written on refusal. Interface: `main(argv) -> int`. Acceptance: `python -m pytest tests/test_smoke.py -q` passes. Specs: S4, S12, S13.
+- [x] 3.4 `src/mm1/controller/cli.py` (GREEN): `argparse` built once in `_build_parser` with `--lam --mu --scenarios --replications --sim-time --seed --warmup --out`; the single-run mode prints the simulated metrics against the theoretical oracle and writes nothing; `lam >= mu` prints `El sistema no es estable` and returns `2`; unusable rates return `3`; usage errors stay argparse's `2`. Interface: `main(argv: Sequence[str] | None = None) -> int`. Acceptance: `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 2000` exits 0 and `python -m mm1 --lam 3.0 --mu 3.0` exits 2. Specs: S4, S6, S7.
+- [ ] 3.7 CLI multi-scenario export (the `--scenarios` default mode): `run_study` → `comparison_dataframe` → `write_csv` → `generate_all` into `--out`. **BLOCKED by tasks 7, 8 and 9**: each collaborator currently raises `NotImplementedError` naming its owner, so `python -m mm1 --replications 5 --sim-time 300 --out outputs/` exits 1 today. The CLI code is already final — it delegates to `run_study` and never computes statistics itself — so this task is verification only and needs no CLI change. Acceptance: that command exits 0 and writes `comparacion.csv` plus the figures. Specs: S4, S6, S7.
 - [x] 3.5 `tests/test_simulation.py` (PRESERVE): one test per touched behavior — `sim_time` bound respected (no departure after `sim_time`) and default `seed=None` still returns a valid run. Acceptance: passes unchanged. Specs: S4, S7.
-- [x] 3.6 `src/mm1/model/simulation.py` (REFACTOR): `_value_at` and `_time_average` are shared by the queue and in-system averages, so the two time averages are computed once. The argument-parsing half of this task belongs to the CLI and moves to stage 4 (task 3.4). Acceptance: `python -m pytest tests/test_simulation.py -q` passes. Specs: S4, S7.
+- [x] 3.6 `src/mm1/model/simulation.py` (REFACTOR): `_value_at` and `_time_average` are shared by the queue and in-system averages, so the two time averages are computed once. The argument-parsing half of this task belongs to the CLI and landed with 3.4, where the parser is built exactly once. Acceptance: `python -m pytest tests/test_simulation.py -q` passes. Specs: S4, S7.
 
 ## Phase 4: Richard Chamba — Scenarios + Analysis + Study Service (model + controller) Slice (PR 4)
 
@@ -111,16 +112,22 @@ Note: `python -m mm1` and `import mm1` outside pytest need an editable install
 
 | Member | Slice | Branch | PR target | Owned files |
 |--------|-------|--------|-----------|-------------|
-| Orchestrator | Foundation (PR 1) | `feat/orchestrator-foundation` | `main` | `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md`, `CONTRIBUTING.md`, `src/mm1/__init__.py`, `src/mm1/__main__.py`, `src/mm1/model/__init__.py`, `src/mm1/view/__init__.py`, `src/mm1/controller/__init__.py` |
-| Richard Chamba | Theory (PR 2) + Scenarios/Analysis/Study (PR 4) | `feat/richard-theory-analysis` | `main` | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py`, `tests/test_study.py` |
-| Jaime Landazuri | Simulation + CLI (PR 3) | `feat/jaime-simulation-cli` | `main` | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` |
-| Cael Soto | Tables + Charts (PR 5) | `feat/cael-tables-charts` | `main` | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` |
-| Domenica Rojas | Streamlit + Document (PR 6) | `feat/domenica-streamlit-document` | `main` | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
+| Orchestrator | Foundation (PR 1) | `feat/orchestrator-foundation` (merged) | `main` | `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md`, `CONTRIBUTING.md`, `src/mm1/__init__.py`, `src/mm1/__main__.py`, `src/mm1/model/__init__.py`, `src/mm1/view/__init__.py`, `src/mm1/controller/__init__.py` |
+| Richard Chamba | Theory (PR 2, merged) + Scenarios/Analysis/Study | `richard-chamba` | `main` | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py`, `tests/test_study.py` |
+| Jaime Landazuri | Simulation (PR 3, merged) + CLI | `jaime-landazuri` | `main` | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` |
+| Cael Soto | Tables + Charts | `cael-soto` | `main` | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` |
+| Domenica Rojas | Streamlit + Document | `domenica-rojas` | `main` | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
 
-Rules: one slice per PR; no edits outside the owned files; each PR ships code plus
-its tests plus the docs it invalidates; `python -m pytest -q` and
-`python -m ruff check src tests app` must be green before review; keep authored
-changes under 400 lines per PR (TDD tests, code and docs stay in the same PR).
+Rules: each member works on **one persistent branch carrying their own name and it is
+never deleted** (the teacher asked for it, for traceability); PRs go from that branch
+to `main`, one stage per PR; the per-stage branches already merged
+(`feat/orchestrator-foundation`, `feat/richard-theory-analysis`,
+`feat/jaime-simulation-cli`) are kept as evidence too. No edits outside the owned
+files — including `CONTRIBUTING.md`, `tasks.md`, `design.md`, `README.md` and
+`docs/division-trabajo.md`, which only the orchestrator updates; each PR ships code
+plus its tests plus the docs it invalidates; `python -m pytest -q`,
+`python -m ruff check src tests app` and `python -m ruff format --check` must be green
+before review; keep authored changes under 400 lines per PR.
 
 Decision needed before apply: Yes
 Chained PRs recommended: Yes
