@@ -208,9 +208,7 @@ def _value_at(breakpoints: list[tuple[float, float]], when: float) -> float:
 
 
 # SPEC: S6 — time average of a piecewise-constant function over a window.
-def _time_average(
-    breakpoints: list[tuple[float, float]], start: float, end: float
-) -> float:
+def _time_average(breakpoints: list[tuple[float, float]], start: float, end: float) -> float:
     """Average a piecewise-constant function over ``[start, end]``.
 
     Args:
@@ -302,9 +300,7 @@ def run_mm1(
 
     if counted:
         mean_wait = sum(c.wait_time for c in counted) / len(counted)
-        mean_system_time = sum(
-            c.departure_time - c.arrival_time for c in counted
-        ) / len(counted)
+        mean_system_time = sum(c.departure_time - c.arrival_time for c in counted) / len(counted)
     else:
         mean_wait = 0.0
         mean_system_time = 0.0
