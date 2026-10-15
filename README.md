@@ -6,10 +6,10 @@ forma incremental, por integrante— un modelo de colas **M/M/1** con **SimPy**,
 compara contra las fórmulas teóricas y genera tablas, gráficas y un recurso
 interactivo en **Streamlit**.
 
-> Estado actual: **planificación y estructura base**. Los módulos del paquete son
-> *stubs* con las firmas congeladas; la lógica, las gráficas y la app todavía no
-> están implementadas. Las secciones que dependen de resultados indican
-> explícitamente que están **pendientes**.
+> Estado actual: **estructura base y modelo teórico completos**. Richard Chamba
+> implementó `ρ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad, con 17 pruebas
+> de teoría. El motor de simulación, los escenarios, el análisis, las gráficas
+> y la app interactiva siguen **pendientes**.
 
 ## Datos de la práctica
 
@@ -86,8 +86,16 @@ La guía define tres escenarios; en todos ellos `μ = 3.0`.
 
 Para cada escenario se registran `ρ`, `L`, `Lq`, `W` y `Wq`, además del tiempo
 promedio de espera simulado y el tamaño promedio de la cola simulado, y luego se
-comparan los resultados teóricos y simulados mediante una tabla. **Los valores
-teóricos y simulados aún no se han generado** (ver *Entregables*).
+comparan los resultados teóricos y simulados mediante una tabla. El modelo teórico
+ya está implementado; los resultados simulados y su comparación siguen pendientes.
+
+| λ | μ | ρ | L | Lq | W | Wq |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2.0 | 3.0 | 0.666667 | 2.0 | 1.333333 | 1.0 | 0.666667 |
+| 2.5 | 3.0 | 0.833333 | 5.0 | 4.166667 | 2.0 | 1.666667 |
+| 2.9 | 3.0 | 0.966667 | 29.0 | 28.033333 | 10.0 | 9.666667 |
+
+Valores teóricos redondeados a seis decimales cuando corresponde.
 
 ## Estructura del proyecto
 
@@ -201,8 +209,9 @@ pytest
 La configuración en `pyproject.toml` busca las pruebas en `tests/` y agrega `src/`
 al *path* de importación, por lo que `pytest` funciona desde la raíz del
 repositorio. En el andamiaje solo existe `tests/test_smoke.py` (prueba
-estructural). Cada integrante agrega sus propias pruebas de comportamiento
-primero (enfoque *test-first*) en su archivo correspondiente.
+estructural). La etapa de teoría agrega `tests/test_metrics.py`, con 17 pruebas
+de comportamiento. Cada integrante agrega sus pruebas primero (enfoque
+*test-first*) en su archivo correspondiente.
 
 ## Reparto de trabajo
 
@@ -225,7 +234,8 @@ El detalle de tareas, dependencias y criterios de aceptación está en
 
 | Entregable | Estado |
 | --- | --- |
-| Código del modelo M/M/1 en SimPy (`src/mm1/`) | **Pendiente** (stubs con firmas congeladas) |
+| Modelo teórico M/M/1 (`model/metrics.py`) | **✅ Listo** — Richard Chamba; 17 pruebas pasan |
+| Motor M/M/1 en SimPy (`model/simulation.py`) | **Pendiente** (stub con firma congelada) |
 | Gráficas del comportamiento de la cola y de los tiempos de espera | **Pendiente** (`charts.py`) |
 | Tabla comparativa teórico vs. simulado | **Pendiente** (`tables.py`, `analysis.py`) |
 | Documento técnico | **Pendiente** (`reports/`) |
@@ -233,8 +243,8 @@ El detalle de tareas, dependencias y criterios de aceptación está en
 | Recurso interactivo (Streamlit) | **Pendiente** (`src/mm1/view/streamlit_view.py` + entrada `app/streamlit_app.py`) |
 | Defensa oral y demostración | **Pendiente** |
 
-No se incluyen resultados numéricos porque la simulación **aún no se ha
-ejecutado**: no hay valores teóricos ni simulados que reportar.
+Los valores teóricos aparecen en la sección *Escenarios*. La simulación **aún no
+se ha ejecutado**; los resultados simulados y las comparaciones siguen pendientes.
 
 ## Enlaces útiles
 

@@ -12,6 +12,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+# Absolute tolerance for comparisons with analytic values, never for stability.
+THEORY_TOLERANCE = 1e-9
+
 
 # SPEC: S3 — theoretical measures listed in guide section 5.1.
 @dataclass(frozen=True)
@@ -44,7 +47,7 @@ def utilization(lam: float, mu: float) -> float:
     Returns:
         The utilization of the single server.
     """
-    raise NotImplementedError("Richard Chamba — see openspec plan")
+    return lam / mu
 
 
 # SPEC: S3 — the system is stable when lambda < mu.
@@ -58,7 +61,7 @@ def is_stable(lam: float, mu: float) -> bool:
     Returns:
         ``True`` when the stability condition ``lambda < mu`` holds.
     """
-    raise NotImplementedError("Richard Chamba — see openspec plan")
+    return lam < mu
 
 
 # SPEC: S3, S6 — rho, L, Lq, W and Wq for a stable system.
@@ -71,5 +74,18 @@ def theoretical_metrics(lam: float, mu: float) -> TheoryMetrics:
 
     Returns:
         The :class:`TheoryMetrics` for a stable system.
+
+    Raises:
+        ValueError: If ``lam >= mu``; stationary metrics do not exist.
     """
-    raise NotImplementedError("Richard Chamba — see openspec plan")
+    if not is_stable(lam, mu):
+        raise ValueError("El sistema no es estable")
+
+    gap = mu - lam
+    return TheoryMetrics(
+        rho=utilization(lam, mu),
+        L=lam / gap,
+        Lq=lam**2 / (mu * gap),
+        W=1 / gap,
+        Wq=lam / (mu * gap),
+    )
