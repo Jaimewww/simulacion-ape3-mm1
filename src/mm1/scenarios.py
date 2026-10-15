@@ -42,7 +42,7 @@ SCENARIOS: tuple[Scenario, ...] = ()
 # SPEC: S5, S6 — run every scenario for a number of replications.
 def run_scenarios(
     replications: int = 30, sim_time: float = 1000.0, base_seed: int = 42, warmup: float = 0.0
-) -> ScenarioRun | list[ScenarioRun]:
+) -> list[ScenarioRun]:
     """Run every scenario ``replications`` times and return the runs.
 
     Args:
