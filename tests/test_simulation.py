@@ -171,9 +171,7 @@ def test_warmup_excludes_early_customers() -> None:
 
     kept = [c for c in run.customers if c.arrival_time >= warmup]
     assert kept
-    assert run.mean_wait == pytest.approx(
-        sum(c.wait_time for c in kept) / len(kept), abs=TOL
-    )
+    assert run.mean_wait == pytest.approx(sum(c.wait_time for c in kept) / len(kept), abs=TOL)
     assert run.mean_system_time == pytest.approx(
         sum(c.departure_time - c.arrival_time for c in kept) / len(kept), abs=TOL
     )

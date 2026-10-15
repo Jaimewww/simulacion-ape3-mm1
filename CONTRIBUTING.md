@@ -20,16 +20,16 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 
 | # | Etapa | Aporte | Responsable | Depende de | Paralelo con | Rama | Cómo se comprueba | Estado |
 |---|-------|--------|-------------|------------|--------------|------|-------------------|--------|
-| 1 | Fundación | Estructura MVC (`model/`, `view/`, `controller/`), packaging, facades de las 3 capas, `README.md`, `CONTRIBUTING.md` | Jaime Landazuri | — | — | `feat/orchestrator-foundation` | `pytest -q` verde · `python -m mm1 --help` resuelve · `import mm1` no importa streamlit | ✅ Hecho |
-| 2 | Modelo · teoría | `model/metrics.py`: `ρ = λ/μ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad | Richard Chamba | 1 | con 3 | `feat/richard-theory-analysis` | `pytest tests/test_metrics.py -q` | ✅ Listo |
+| 1 | Fundación | Estructura MVC (`model/`, `view/`, `controller/`), packaging, facades de las 3 capas, `README.md`, `CONTRIBUTING.md` | Jaime Landazuri | — | — | `main` (commits directos) | `pytest -q` verde · `python -m mm1 --help` resuelve · `import mm1` no importa streamlit | ✅ Hecho |
+| 2 | Modelo · teoría | `model/metrics.py`: `ρ = λ/μ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad | Richard Chamba | 1 | con 3 | `Richard_ModeloTeorico` | `pytest tests/test_metrics.py -q` | ✅ Listo |
 | 3 | Modelo · motor | `model/simulation.py`: SimPy, un servidor, FIFO, registro de clientes y traza de cola | Jaime Landazuri | 1 | con 2 | `feat/jaime-simulation-cli` | `pytest tests/test_simulation.py -q` | ✅ Listo |
-| 4 | Controlador · CLI | `controller/cli.py`: `python -m mm1` corre los 3 escenarios y exporta | Jaime Landazuri | 3 | con 5 | `feat/jaime-simulation-cli` | `python -m mm1 --replications 5 --sim-time 300 --out outputs/` → salida 0 | ⬜ Pendiente |
-| 5 | Modelo · escenarios | `model/scenarios.py`: los 3 escenarios de la guía y las réplicas con semillas | Richard Chamba | 3 | con 4 | `feat/richard-theory-analysis` | `pytest tests/test_scenarios.py -q` | ⬜ Pendiente |
-| 6 | Modelo · análisis | `model/analysis.py`: agregación, IC 95 % y error relativo teórico vs simulado | Richard Chamba | 5 | — | `feat/richard-theory-analysis` | `pytest tests/test_analysis.py -q` | ⬜ Pendiente |
-| 7 | Controlador · servicio | `controller/study.py`: `run_study`, **el servicio que comparten la CLI y la app** | Richard Chamba | 6 | — | `feat/richard-theory-analysis` | `pytest tests/test_study.py -q` | ⬜ Pendiente |
-| 8 | Vista · tabla | `view/tables.py`: tabla comparativa de 19 columnas, CSV y LaTeX | Cael Soto | 7 | con 9 | `feat/cael-tables-charts` | `pytest tests/test_tables.py -q` | ⬜ Pendiente |
-| 9 | Vista · gráficas | `view/charts.py`: evolución de la cola, tiempos de espera, teoría vs simulación, comparación de escenarios | Cael Soto | 7 | con 8 | `feat/cael-tables-charts` | `pytest tests/test_charts.py -q` | ⬜ Pendiente |
-| 10 | **Vista · recurso interactivo** | `view/streamlit_view.py` + `app/streamlit_app.py`: sliders de λ y μ, aviso de estabilidad, animación de la cola, tabla viva y gráficas interactivas | Domenica Rojas | 7, 8, 9 | — | `feat/domenica-streamlit-document` | `pytest tests/test_app.py -q` y `streamlit run app/streamlit_app.py` arranca | ⬜ Pendiente |
+| 4 | Controlador · CLI | `controller/cli.py`: `python -m mm1` con dos modos — una corrida (`--lam/--mu`) y los 3 escenarios con exportación | Jaime Landazuri | 3 | con 5 | `jaime-landazuri` | `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 2000` → salida 0. El modo multi-escenario queda completo recién con 7, 8 y 9 | 🟡 Parcial |
+| 5 | Modelo · escenarios | `model/scenarios.py`: los 3 escenarios de la guía y las réplicas con semillas | Richard Chamba | 3 | con 4 | `richard-chamba` | `pytest tests/test_scenarios.py -q` | ⬜ Pendiente |
+| 6 | Modelo · análisis | `model/analysis.py`: agregación, IC 95 % y error relativo teórico vs simulado | Richard Chamba | 5 | — | `richard-chamba` | `pytest tests/test_analysis.py -q` | ⬜ Pendiente |
+| 7 | Controlador · servicio | `controller/study.py`: `run_study`, **el servicio que comparten la CLI y la app** | Richard Chamba | 6 | — | `richard-chamba` | `pytest tests/test_study.py -q`; con esto la CLI multi-escenario deja de fallar sin tocar la CLI | ⬜ Pendiente |
+| 8 | Vista · tabla | `view/tables.py`: tabla comparativa de 19 columnas, CSV y LaTeX | Cael Soto | 7 | con 9 | `cael-soto` | `pytest tests/test_tables.py -q` | ⬜ Pendiente |
+| 9 | Vista · gráficas | `view/charts.py`: evolución de la cola, tiempos de espera, teoría vs simulación, comparación de escenarios | Cael Soto | 7 | con 8 | `cael-soto` | `pytest tests/test_charts.py -q` | ⬜ Pendiente |
+| 10 | **Vista · recurso interactivo** | `view/streamlit_view.py` + `app/streamlit_app.py`: sliders de λ y μ, aviso de estabilidad, animación de la cola, tabla viva y gráficas interactivas | Domenica Rojas | 7, 8, 9 | — | `domenica-rojas` | `pytest tests/test_app.py -q` y `streamlit run app/streamlit_app.py` arranca | ⬜ Pendiente |
 
 > **La fila 10 es el entregable final del código: el recurso visual.**
 > Nada después de la fila 10 modifica el programa; lo que sigue es el cierre de la
@@ -39,7 +39,7 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 
 - **2 y 3 son independientes**: la teoría es matemática pura y el motor es SimPy. Los
   dos se pueden escribir a la vez porque la interfaz ya está congelada en `design.md`.
-- **4 y 5 pueden ir juntos**: la CLI ya corre el motor, y los escenarios son datos.
+- **4 puede empezar junto con 5**: el modo de una corrida de la CLI ya funciona con solo el motor (etapa 3). El modo multi-escenario recién queda completo cuando existan 7, 8 y 9 — y cuando eso pase **la CLI no se toca**: ya delega en `run_study`.
 - **6 necesita 5** porque agregar réplicas requiere que existan las corridas.
 - **7 es la bisagra**: hasta acá hay piezas sueltas; con `run_study` existe *una* forma
   de obtener todos los resultados. Por eso la app y el documento no pueden divergir.
@@ -64,12 +64,35 @@ Estos entregables son de la guía (§6, §8) y se hacen **después** de la fila 
 
 ### Ramas y PRs
 
-- Una rama por etapa, con el nombre de la tabla: `feat/<nombre>-<tema>`.
-- Un PR por etapa, contra `main`. Un PR = una etapa, no varias.
+**Cada integrante trabaja en UNA rama persistente con su nombre, y esa rama NO se
+borra nunca.** Lo pidió el docente para trazabilidad: la rama es el registro visible
+del aporte de cada uno.
+
+| Integrante | Rama persistente |
+|---|---|
+| Jaime Landazuri | `jaime-landazuri` |
+| Richard Chamba | `richard-chamba` |
+| Cael Soto | `cael-soto` |
+| Domenica Rojas | `domenica-rojas` |
+
+Reglas:
+
+- Los aportes nuevos se commitean **en tu rama persistente**, no en `main`.
+- El PR sale de tu rama persistente hacia `main`. Un PR = una etapa, no varias.
+- **No borres tu rama después del merge.** El repo tiene
+  `delete_branch_on_merge` apagado justamente para eso. Las ramas que ya existen y
+  hay que conservar como evidencia son: `Richard_ModeloTeorico` (etapa 2, mergeada
+  como PR #1), `feat/jaime-simulation-cli` (etapa 3, mergeada como PR #2) y
+  `jaime-landazuri`. La fundación (etapa 1) fue la excepción: se commiteó directo a
+  `main` porque la política de ramas por integrante todavía no existía.
+- Si tu nombre de rama no sigue el patrón de la tabla, **no la renombres**: la rama
+  que ya está mergeada es el registro real, y renombrarla rompe la trazabilidad.
 - Nadie edita archivos que no le pertenecen (la tabla de propiedad está en
   `openspec/changes/ape3-mm1-queue-simulation/tasks.md` y en
   `docs/division-trabajo.md`). Si necesitás tocar un archivo ajeno, avisá en el PR
-  antes de hacerlo.
+  antes de hacerlo. **Los documentos del plan (`CONTRIBUTING.md`, `tasks.md`,
+  `design.md`, `README.md`, `docs/division-trabajo.md`) los toca solo quien
+  orquesta**: el avance propio se reporta en el PR, no editando esos archivos.
 - Mantené el PR y su revisión **por debajo de ~400 líneas cambiadas**. Si se pasa,
   partilo en dos: el recurso se agradece, la gente se cansa de revisar.
 
