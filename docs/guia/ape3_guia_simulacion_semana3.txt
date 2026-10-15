@@ -1,0 +1,288 @@
+                                                              FEIRNNR - Carrera de
+                                                                    Computación
+
+
+
+
+        Guía de Actividades Práctico-
+          Experimentales Nro. 003
+  1. Datos Generales
+Asignatura                            Simulación
+Ciclo                                 5
+Unidad                                U1: Introducción a la Simulación
+Resultado de aprendizaje de la        R1. Aplica análisis estadísticos de los datos
+unidad                                de la Simulación para mejorar la calidad de
+                                      los resultados, bajo los principios de
+                                      solidaridad, transparencia, responsabilidad
+                                      y honestidad.
+Práctica Nro.                         03
+Título de la Práctica                 Simulación de un sistema de líneas de espera
+                                      M/M/1 mediante SimPy
+Nombre del Docente                    José O. Guamán Q.
+Fecha                                 15 de Octubre de 2026
+                                      16 de Octubre 2026
+Horario                               Jueves 10h30 a 11h30
+                                      Viernes 07h30 a 09h30
+Lugar                                 Aula
+Tiempo planificado en el Sílabo       3
+
+
+  2. Objetivo(s) de la Práctica:
+        Simular un sistema de líneas de espera M/M/1 utilizando Python y SimPy,
+        analizando el comportamiento de los clientes, la cola y el servidor.
+           • Implementar un modelo M/M/1 utilizando la biblioteca SimPy.
+           • Calcular las principales métricas teóricas del sistema de espera.
+           • Comparar los resultados teóricos con los obtenidos mediante la
+               simulación
+
+  3. Materiales y reactivos:
+            •   Python 3.x.
+            •   Biblioteca SimPy.
+            •   NumPy.
+            •   Matplotlib.
+            •   Editor de código: Visual Studio Code, PyCharm o Jupyter Notebook.
+
+  4. Equipos y herramientas
+        •   Computador.
+                                                           FEIRNNR - Carrera de
+                                                                 Computación
+
+
+  •       Procesador de 2 núcleos o superior.
+  •       Mínimo 4 GB de RAM.
+  •       Sistema operativo Linux o macOS
+
+
+5. Procedimiento / Metodología
+  5.1 Fundamento teórico
+  El modelo M/M/1 representa un sistema de líneas de espera que posee:
+  •       Llegadas de clientes siguiendo una distribución de Poisson.
+  •       Tiempos de servicio con distribución exponencial.
+  •       Un único servidor.
+  •       Atención de clientes bajo el principio FIFO: primero en llegar, primero
+          en ser atendido.
+          El modelo utiliza dos parámetros principales:
+  •       λ: tasa promedio de llegada de clientes.
+  •       μ: tasa promedio de servicio del servidor.
+  •       ρ (rho): utilización del servidor.
+  La utilización del servidor se calcula mediante:
+             ρ=μ / λ
+  Para que el sistema sea estable debe cumplirse:
+  λ<μ
+  Las principales medidas teóricas del sistema son:
+  Número promedio de clientes en el sistema:
+  L= λ / (μ−λ)
+  Número promedio de clientes en la cola:
+  Lq = λ2 / μ(μ−λ)
+  Tiempo promedio que un cliente permanece en el sistema:
+  W = 1 / μ−λ
+  Tiempo promedio que un cliente espera en la cola:
+  Wq = λ / μ(μ−λ)
+
+
+      Símbolo            Significado
+      λ                  Tasa de llegada de clientes
+      μ                  Tasa de servicio
+      ρ                  Utilización del servidor
+      L                  Número promedio de clientes en el sistema
+                                                       FEIRNNR - Carrera de
+                                                             Computación
+
+
+ Lq                  Número promedio de clientes en la cola
+ W                   Tiempo promedio en el sistema
+ Wq                  Tiempo promedio de espera en la cola
+
+
+
+
+Pseudocódigo
+INICIO
+
+
+Importar SimPy, NumPy y Matplotlib
+
+
+Definir λ
+Definir μ
+Definir tiempo de simulación
+
+
+Calcular ρ = λ / μ
+
+
+SI λ >= μ
+  Mostrar "El sistema no es estable"
+SINO
+
+
+  Crear entorno SimPy
+
+
+  Crear servidor con capacidad = 1
+
+
+  Crear lista de tiempos de espera
+  Crear lista de tamaños de cola
+
+
+  Generar clientes
+
+
+  PARA cada cliente:
+
+
+      Generar tiempo entre llegadas
+
+
+      Esperar hasta la llegada
+                                                     FEIRNNR - Carrera de
+                                                           Computación
+
+      Registrar llegada
+
+
+      Solicitar servidor
+
+
+      Esperar hasta obtener el servidor
+
+
+      Calcular tiempo de espera
+
+
+      Generar tiempo de servicio
+
+
+      Atender cliente
+
+
+      Liberar servidor
+
+
+  FIN PARA
+
+
+  Calcular resultados simulados
+
+
+  Calcular resultados teóricos
+
+
+  Comparar resultados
+
+
+  Generar gráficas
+
+
+FIN SI
+
+
+FIN
+
+
+Ejecutar la simulación utilizando los siguientes escenarios:
+
+
+ Escenario            λ            μ        Condición
+ 1                    2.0          3.0      Sistema estable
+ 2                    2.5          3.0      Mayor utilización
+ 3                    2.9          3.0      Cerca de saturación
+                                                      FEIRNNR - Carrera de
+                                                            Computación
+
+  Para cada escenario registrar:
+ •  ρ.
+ • L.
+ • Lq.
+ • W.
+ • Wq.
+ • Tiempo promedio de espera simulado.
+ • Tamaño promedio de la cola simulado.
+    Posteriormente, comparar los resultados mediante una tabla.
+
+
+
+6. Resultados esperados:
+  Al finalizar la práctica, el estudiante deberá obtener:
+ •     Un sistema M/M/1 funcional mediante SimPy.
+ •     Simulación de llegada de clientes y atención por un único servidor.
+ •     Tiempo promedio de espera de los clientes.
+ •     Tamaño promedio de la cola.
+ •     Utilización teórica del servidor.
+ •     Valores teóricos de L, Lq, W y Wq.
+ •     Gráficas del comportamiento de la cola y los tiempos de espera.
+ •     Comparación entre resultados teóricos y simulados.
+ •     Análisis del comportamiento del sistema para los tres escenarios
+       propuestos.
+  Se espera observar que, cuando λ se aproxima a μ, aumentan el tiempo
+  de espera y el tamaño de la cola, debido a que el servidor trabaja cerca de
+  su capacidad máxima
+
+
+7. Preguntas de Control:
+  ¿Qué representa el modelo M/M/1?
+  ¿Qué representan λ y μ?
+  ¿Por qué debe cumplirse λ < μ para que el sistema sea estable?
+  ¿Qué significa la utilización ρ?
+  ¿Cuál es la diferencia entre W y Wq?
+  ¿Cuál es la diferencia entre L y Lq?
+  ¿Por qué SimPy utiliza una distribución exponencial para generar los
+  tiempos?
+  ¿Qué sucede con la cola cuando λ se aproxima a μ?
+  ¿Por qué los resultados simulados pueden ser diferentes de los resultados
+  teóricos?
+  ¿Qué ocurriría si λ fuera mayor que μ??
+                                                                     FEIRNNR - Carrera de
+                                                                           Computación
+
+
+  8. Evaluación
+
+
+    Criterio                        Descripción                         Bien Regular Mal
+Defensa oral y      Defensa oral, dominio del tema,                     4    2       1
+demostración        explicación del modelo matemático y
+                    código, respuestas a las preguntas,
+                    demostración y funcionamiento de la
+                    simulación.
+Implementación      Implementación correcta del modelo                  3                   1,5     1
+                    M/M/1, funcionamiento del programa,
+                    cumplimiento de los requerimientos y
+                    calidad de la simulación y visualización.
+Documento           Estructura y presentación, procedimiento,           3                   1,5     1
+                    resultados y evidencias, video de
+                    demostración, conclusiones relacionadas
+                    con los objetivos y análisis de resultados.
+Total                                                                   10                  5       3
+
+
+
+  9. Bibliografía
+        Diapositivas semana 3
+
+
+
+  10.         Elaboración y Aprobación
+
+
+
+                        José Guamán
+                                                           Validar únicamente en FirmaEC.
+
+ Elaborado                                                 Firmado electrónicamente por:
+                                                           JOSE OSWALDO GUAMAN
+                                                           QUINCHE
+    por                   Docente
+
+
+
+
+                                                                            Firmado electrónicamente por:
+
+ Aprobado         Edison L Coronel Romero                                   EDISON LEONARDO CORONEL ROMERO
+                                                                            Validar únicamente con FirmaEC
+
+
+    por             Director de Carrera
+
