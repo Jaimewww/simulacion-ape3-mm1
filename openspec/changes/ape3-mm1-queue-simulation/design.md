@@ -207,6 +207,26 @@ def build_comparison_figure(summaries: Sequence[ScenarioSummary]) -> "matplotlib
 TDD order per module: RED test module → GREEN implementation → PRESERVE one test
 for each pre-existing behavior the change touches → REFACTOR with green tests.
 
+### Measured evidence for the reporting slices (stage 3, PR 3)
+
+Running the engine against `theoretical_metrics` on 2026-10-15 with
+`sim_time=2000` produced the numbers the document must use to answer guide §7
+question 9 ("why can the simulated results differ from the theoretical ones?"):
+
+| Scenario | Single run vs theory (`Wq`, `Lq`) | Mean of 12 replicas vs theory | Theory inside the 30-replica CI95? |
+|----------|-----------------------------------|-------------------------------|-------------------------------------|
+| `2.0, 3.0` | +5.7 %, +5.0 % | +1.9 % | yes |
+| `2.5, 3.0` | +0.3 %, +2.1 % | +1.5 % | yes |
+| `2.9, 3.0` | +74 %, +76 % | +7.4 % | yes |
+
+The error falls as the horizon grows (`lambda = 2.0`: 12.9 % at `sim_time=500`,
+5.7 % at 2000, 2.5 % at 10000, 1.6 % at 50000), so the engine is consistent, not
+biased. At `rho = 0.967` the waiting time has a heavy tail, so **a single run is
+not evidence**; the mean over replicas is, and the theory lands inside the 95 %
+interval for all three scenarios. This is the measured justification for the 30
+default replications and for `analysis` reporting CI95 and relative error.
+Little's law holds on the simulated outputs to within 0.9 %.
+
 ## Threat Matrix
 
 N/A — this change adds no routing, shell command execution, subprocess,
