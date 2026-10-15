@@ -25,7 +25,7 @@ Chain strategy: stacked-to-main
 | 3 | Simulation engine + CLI (Phase 3) | PR 3 | `python -m pytest tests/test_simulation.py tests/test_smoke.py -q` | `python -m mm1 --replications 5 --sim-time 300 --out outputs/` | `src/mm1/simulation.py`, `src/mm1/cli.py`, both test modules |
 | 4 | Scenarios + analysis (Phase 4) | PR 4 | `python -m pytest tests/test_scenarios.py tests/test_analysis.py -q` | `python -c "from mm1.scenarios import run_scenarios; from mm1.analysis import summarize; print(len(summarize(run_scenarios(replications=3, sim_time=100.0))))"` | `src/mm1/scenarios.py`, `src/mm1/analysis.py`, both test modules |
 | 5 | Tables + charts (Phase 5) | PR 5 | `python -m pytest tests/test_tables.py tests/test_charts.py -q` | `python -m mm1 --replications 5 --sim-time 300 --out outputs/ && ls outputs/` | `src/mm1/tables.py`, `src/mm1/charts.py`, both test modules |
-| 6 | Streamlit resource + document (Phase 6) | PR 6 | `python -m pytest tests/test_app.py -q` | `streamlit run app/streamlit_app.py` (manual, no browser runner) | `app/streamlit_app.py`, `tests/test_app.py`, `reports/**` |
+| 6 | Streamlit resource + document (Phase 6) | PR 6 | `python -m pytest tests/test_app.py -q` | `streamlit run app/streamlit_app.py` (manual, no browser runner) | `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
 
 Merge order: PR 1 → PR 2 → PR 3 → PR 4 → PR 5 → PR 6. Slices are file-disjoint and
 can be *developed* in parallel, but each PR's integration tests only reach GREEN
@@ -101,7 +101,7 @@ Note: `python -m mm1` and `import mm1` outside pytest need an editable install
 | Richard Chamba | Theory (PR 2) + Scenarios/Analysis (PR 4) | `feat/richard-theory-analysis` | `main` | `src/mm1/metrics.py`, `src/mm1/scenarios.py`, `src/mm1/analysis.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py` |
 | Jaime Landazuri | Simulation + CLI (PR 3) | `feat/jaime-simulation-cli` | `main` | `src/mm1/simulation.py`, `src/mm1/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` |
 | Cael Soto | Tables + Charts (PR 5) | `feat/cael-tables-charts` | `main` | `src/mm1/tables.py`, `src/mm1/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` |
-| Domenica Rojas | Streamlit + Document (PR 6) | `feat/domenica-streamlit-document` | `main` | `app/streamlit_app.py`, `tests/test_app.py`, `reports/**` |
+| Domenica Rojas | Streamlit + Document (PR 6) | `feat/domenica-streamlit-document` | `main` | `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
 
 Rules: one slice per PR; no edits outside the owned files; each PR ships code plus
 its tests plus the docs it invalidates; `python -m pytest -q` and

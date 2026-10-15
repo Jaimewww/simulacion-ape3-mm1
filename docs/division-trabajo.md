@@ -29,7 +29,7 @@ bloque 1 habilita a los demás.
 | 2 | Jaime Landazuri | Motor de simulación SimPy y línea de comandos | `src/mm1/simulation.py`, `src/mm1/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` | S4, S7, S12, S13 | `feat/jaime-simulation-cli` |
 | 3 | Richard Chamba | Modelo teórico, escenarios y análisis estadístico | `src/mm1/metrics.py`, `src/mm1/scenarios.py`, `src/mm1/analysis.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py` | S3, S5, S6 | `feat/richard-theory-analysis` |
 | 4 | Cael Soto | Tabla comparativa y gráficas | `src/mm1/tables.py`, `src/mm1/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` | S6, S7 | `feat/cael-tables-charts` |
-| 5 | Domenica Rojas | Recurso interactivo y documento técnico | `app/streamlit_app.py`, `tests/test_app.py`, `reports/**` | S8, S9, S11, S15 | `feat/domenica-streamlit-document` |
+| 5 | Domenica Rojas | Recurso interactivo y documento técnico | `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | S8, S9, S11, S15 | `feat/domenica-streamlit-document` |
 
 Regla de oro: **nadie escribe en los archivos de otro bloque**. Las interfaces
 públicas están congeladas en `design.md`; si alguien necesita un cambio de firma,
@@ -234,7 +234,7 @@ orden 1, 2, 3.
 
 ## 8. Bloque 5 — Recurso interactivo y documento (Domenica Rojas)
 
-**Archivos propios:** `app/streamlit_app.py`, `tests/test_app.py`, `reports/**`.
+**Archivos propios:** `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
 **Specs:** S8 (10 preguntas de control), S9 (criterios de evaluación),
 S11 (recurso gráfico interactivo), S15 (Streamlit).
 
@@ -397,7 +397,7 @@ de archivos generados por "python -m mm1 --replications 5 --sim-time 300 --out o
 
 ```text
 Tarea: ejecuta las tareas del bloque 5 (6.1 a 6.8) de tasks.md.
-Archivos permitidos: app/streamlit_app.py, tests/test_app.py, reports/**.
+Archivos permitidos: app/streamlit_app.py, tests/test_app.py, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
 Interfaz: helpers puros con las firmas exactas de design.md.
 El recurso debe tener deslizadores para λ y μ, aviso de estabilidad, botón de
 ejecución, animación de la cola, tabla teoría vs simulación y al menos dos

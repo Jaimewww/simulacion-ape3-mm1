@@ -65,7 +65,8 @@ Satisfies the proposal approach for `mm1-theory`, `mm1-simulation`,
 | `src/mm1/cli.py` | Create | `main` entry point with `--lam/--mu/--scenarios/--replications/--sim-time/--seed/--warmup/--out` |
 | `app/streamlit_app.py` | Create | Streamlit resource (sliders, guard, animation, live table, charts) |
 | `tests/test_*.py` | Create | One pytest module per source module, plus `tests/test_app.py` for the app helpers (decision D12) |
-| `reports/**` | Create | Technical document, figures, demo video link |
+| `reports/figures/**` | Create | Figures used by the document (owner: Cael Soto) |
+| `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | Create | Technical document, demo video link, defense notes (owner: Domenica Rojas) |
 | `docs/division-trabajo.md` | Create | Spanish work division (this planning change) |
 | `outputs/**` | Generated | CSV/PNG; gitignored and regenerable |
 
@@ -161,7 +162,7 @@ def build_comparison_figure(summaries: Sequence[ScenarioSummary]) -> "matplotlib
 | Jaime Landazuri | `src/mm1/simulation.py`, `src/mm1/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` | S4, S7, S12, S13 |
 | Richard Chamba | `src/mm1/metrics.py`, `src/mm1/scenarios.py`, `src/mm1/analysis.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py` | S3, S5, S6 |
 | Cael Soto | `src/mm1/tables.py`, `src/mm1/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` | S6, S7 |
-| Domenica Rojas | `app/streamlit_app.py`, `tests/test_app.py`, `reports/**` | S8, S9, S11, S15 |
+| Domenica Rojas | `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | S8, S9, S11, S15 |
 | Orchestrator (foundation) | `src/mm1/__init__.py`, `src/mm1/__main__.py`, `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md` | S2, S10, S12 |
 
 ## Testing Strategy

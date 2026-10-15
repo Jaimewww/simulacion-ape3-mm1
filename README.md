@@ -197,7 +197,7 @@ primero (enfoque *test-first*) en su archivo correspondiente.
 | Jaime Landazuri | `src/mm1/simulation.py`, `src/mm1/cli.py` |
 | Richard Chamba | `src/mm1/metrics.py`, `src/mm1/scenarios.py`, `src/mm1/analysis.py` |
 | Cael Soto | `src/mm1/tables.py`, `src/mm1/charts.py` |
-| Domenica Rojas | `app/streamlit_app.py`, `reports/**` |
+| Domenica Rojas | `app/streamlit_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
 
 El detalle de tareas, dependencias y criterios de aceptación está en
 [`docs/division-trabajo.md`](docs/division-trabajo.md).
