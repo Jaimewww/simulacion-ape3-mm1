@@ -112,17 +112,19 @@ Note: `python -m mm1` and `import mm1` outside pytest need an editable install
 
 | Member | Slice | Branch | PR target | Owned files |
 |--------|-------|--------|-----------|-------------|
-| Orchestrator | Foundation (PR 1) | `feat/orchestrator-foundation` (merged) | `main` | `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md`, `CONTRIBUTING.md`, `src/mm1/__init__.py`, `src/mm1/__main__.py`, `src/mm1/model/__init__.py`, `src/mm1/view/__init__.py`, `src/mm1/controller/__init__.py` |
-| Richard Chamba | Theory (PR 2, merged) + Scenarios/Analysis/Study | `richard-chamba` | `main` | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py`, `tests/test_study.py` |
+| Orchestrator | Foundation (stage 1) | `main` (direct commits, no PR) | `main` | `requirements.txt`, `pyproject.toml`, `.gitignore`, `README.md`, `CONTRIBUTING.md`, `src/mm1/__init__.py`, `src/mm1/__main__.py`, `src/mm1/model/__init__.py`, `src/mm1/view/__init__.py`, `src/mm1/controller/__init__.py` |
+| Richard Chamba | Theory (PR 2, merged from `Richard_ModeloTeorico`) + Scenarios/Analysis/Study | `richard-chamba` | `main` | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py`, `tests/test_study.py` |
 | Jaime Landazuri | Simulation (PR 3, merged) + CLI | `jaime-landazuri` | `main` | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` |
 | Cael Soto | Tables + Charts | `cael-soto` | `main` | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` |
 | Domenica Rojas | Streamlit + Document | `domenica-rojas` | `main` | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
 
 Rules: each member works on **one persistent branch carrying their own name and it is
 never deleted** (the teacher asked for it, for traceability); PRs go from that branch
-to `main`, one stage per PR; the per-stage branches already merged
-(`feat/orchestrator-foundation`, `feat/richard-theory-analysis`,
-`feat/jaime-simulation-cli`) are kept as evidence too. No edits outside the owned
+to `main`, one stage per PR. The branches that already exist and MUST be kept as
+evidence are `Richard_ModeloTeorico` (stage 2, PR #1) and `feat/jaime-simulation-cli`
+(stage 3, PR #2); stage 1 was committed straight to `main` because the per-member
+branch policy did not exist yet, and `delete_branch_on_merge` is off on purpose. No
+edits outside the owned
 files — including `CONTRIBUTING.md`, `tasks.md`, `design.md`, `README.md` and
 `docs/division-trabajo.md`, which only the orchestrator updates; each PR ships code
 plus its tests plus the docs it invalidates; `python -m pytest -q`,

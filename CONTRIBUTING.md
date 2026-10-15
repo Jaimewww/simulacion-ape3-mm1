@@ -20,8 +20,8 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 
 | # | Etapa | Aporte | Responsable | Depende de | Paralelo con | Rama | Cómo se comprueba | Estado |
 |---|-------|--------|-------------|------------|--------------|------|-------------------|--------|
-| 1 | Fundación | Estructura MVC (`model/`, `view/`, `controller/`), packaging, facades de las 3 capas, `README.md`, `CONTRIBUTING.md` | Jaime Landazuri | — | — | `feat/orchestrator-foundation` | `pytest -q` verde · `python -m mm1 --help` resuelve · `import mm1` no importa streamlit | ✅ Hecho |
-| 2 | Modelo · teoría | `model/metrics.py`: `ρ = λ/μ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad | Richard Chamba | 1 | con 3 | `feat/richard-theory-analysis` | `pytest tests/test_metrics.py -q` | ✅ Listo |
+| 1 | Fundación | Estructura MVC (`model/`, `view/`, `controller/`), packaging, facades de las 3 capas, `README.md`, `CONTRIBUTING.md` | Jaime Landazuri | — | — | `main` (commits directos) | `pytest -q` verde · `python -m mm1 --help` resuelve · `import mm1` no importa streamlit | ✅ Hecho |
+| 2 | Modelo · teoría | `model/metrics.py`: `ρ = λ/μ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad | Richard Chamba | 1 | con 3 | `Richard_ModeloTeorico` | `pytest tests/test_metrics.py -q` | ✅ Listo |
 | 3 | Modelo · motor | `model/simulation.py`: SimPy, un servidor, FIFO, registro de clientes y traza de cola | Jaime Landazuri | 1 | con 2 | `feat/jaime-simulation-cli` | `pytest tests/test_simulation.py -q` | ✅ Listo |
 | 4 | Controlador · CLI | `controller/cli.py`: `python -m mm1` con dos modos — una corrida (`--lam/--mu`) y los 3 escenarios con exportación | Jaime Landazuri | 3 | con 5 | `jaime-landazuri` | `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 2000` → salida 0. El modo multi-escenario queda completo recién con 7, 8 y 9 | 🟡 Parcial |
 | 5 | Modelo · escenarios | `model/scenarios.py`: los 3 escenarios de la guía y las réplicas con semillas | Richard Chamba | 3 | con 4 | `richard-chamba` | `pytest tests/test_scenarios.py -q` | ⬜ Pendiente |
@@ -79,9 +79,14 @@ Reglas:
 
 - Los aportes nuevos se commitean **en tu rama persistente**, no en `main`.
 - El PR sale de tu rama persistente hacia `main`. Un PR = una etapa, no varias.
-- **No borres tu rama después del merge**, ni las ramas por etapa ya mergeadas
-  (`feat/orchestrator-foundation`, `feat/richard-theory-analysis`,
-  `feat/jaime-simulation-cli`): las tres quedan como evidencia.
+- **No borres tu rama después del merge.** El repo tiene
+  `delete_branch_on_merge` apagado justamente para eso. Las ramas que ya existen y
+  hay que conservar como evidencia son: `Richard_ModeloTeorico` (etapa 2, mergeada
+  como PR #1), `feat/jaime-simulation-cli` (etapa 3, mergeada como PR #2) y
+  `jaime-landazuri`. La fundación (etapa 1) fue la excepción: se commiteó directo a
+  `main` porque la política de ramas por integrante todavía no existía.
+- Si tu nombre de rama no sigue el patrón de la tabla, **no la renombres**: la rama
+  que ya está mergeada es el registro real, y renombrarla rompe la trazabilidad.
 - Nadie edita archivos que no le pertenecen (la tabla de propiedad está en
   `openspec/changes/ape3-mm1-queue-simulation/tasks.md` y en
   `docs/division-trabajo.md`). Si necesitás tocar un archivo ajeno, avisá en el PR
