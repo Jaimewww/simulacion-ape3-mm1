@@ -6,9 +6,13 @@ context: |
     J. Landazuri, R. Chamba, C. Soto, D. Rojas).
   Tech stack: Python 3.x, SimPy, NumPy, Matplotlib, pandas, Streamlit,
     pytest for tests, ruff for linting.
-  Architecture: one package `src/mm1` (metrics, simulation, scenarios,
-    analysis, tables, charts, cli) plus `app/streamlit_app.py`
-    (interactive resource). Generated CSV/PNG live in `outputs/`.
+  Architecture: one package `src/mm1` in three MVC layers — `model/`
+    (metrics, simulation, scenarios, analysis), `view/` (tables, charts,
+    streamlit_view) and `controller/` (study, cli). `app/streamlit_app.py`
+    is a thin entry point for the interactive resource. The model imports no
+    other layer; the view renders and never computes; `run_study` is the one
+    service shared by the CLI and the web page. Generated CSV/PNG live in
+    `outputs/`.
   Testing: pytest, strict TDD (RED -> GREEN -> PRESERVE -> REFACTOR);
     one test module per source module.
   Style: code and SDD artifacts in English, human-facing documents in
@@ -35,7 +39,7 @@ testing:
 
 rules:
   proposal:
-    - State guide-to-spec traceability (S1-S15) explicitly.
+    - State guide-to-spec traceability (S1-S18) explicitly.
   specs:
     - Use Given/When/Then for every scenario and RFC 2119 keywords
       (MUST, SHALL, SHOULD, MAY).
