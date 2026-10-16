@@ -21,8 +21,8 @@ archived. `sdd-archive` merges each delta `## ADDED Requirements` block into
 | ---------- | ------- |
 | `mm1-theory` | Theoretical M/M/1 metrics (`rho`, `L`, `Lq`, `W`, `Wq`) and the stability condition `lambda < mu`. |
 | `mm1-simulation` | SimPy M/M/1 engine, customer records, queue trace, the three guide scenarios, replication summaries. |
-| `mm1-reporting` | Comparison table (CSV + LaTeX) and queue/wait/theory-vs-simulation charts. |
-| `mm1-delivery` | `python -m mm1` CLI, Streamlit interactive resource, technical document, work division. |
+| `mm1-reporting` | Comparison table (CSV + LaTeX), queue/wait/theory-vs-simulation charts, and the headless queue animation. |
+| `mm1-delivery` | `python -m mm1` CLI (the only interface, no web UI), technical document, work division. |
 
 ## Rules
 

@@ -34,32 +34,58 @@ non-zero exit code without writing files. Specs: S4, S6, S7.
 - THEN the exit code is `0`
 - AND the summary uses 5 replications per scenario
 
-### Requirement: The interactive resource MUST be a Streamlit app
+### Requirement: The interface MUST be command line only
 
-`app/streamlit_app.py` MUST provide sliders for `lambda` and `mu`, display `rho`
-with a stability guard, offer a run button, show the queue evolution as an
-animation, show a live theory-vs-simulation table, and render at least two
-interactive charts over the three guide scenarios. Pure helpers `theory_row(lam,
-mu)`, `stability_message(lam, mu)`, `scenario_table(summaries)`,
-`build_queue_figure(run)` and `build_comparison_figure(summaries)` MUST be
-importable without launching Streamlit so they can be unit tested. Specs: S11, S15.
+The practice MUST have **no interactive interface**: no web UI, no `app/` directory, no
+form, no slider and no server. The demonstration MUST run from the command line, which is
+what guide §5 asks for: Python + SimPy + NumPy + Matplotlib. `requirements.txt` and
+`pyproject.toml` MUST NOT declare any web framework. Specs: S19.
 
-#### Scenario: Stability guard message
+#### Scenario: No interactive interface exists
 
-- GIVEN `stability_message(3.0, 3.0)` and `stability_message(2.0, 3.0)`
-- THEN the first returns an unstable/blocked message and the second a stable one
+- GIVEN the delivered source tree
+- WHEN `grep -ri streamlit src tests app pyproject.toml requirements.txt` is run
+- THEN it returns nothing
+- AND no `app/` directory exists
 
-#### Scenario: Theory row is derived from theory functions
+#### Scenario: The package imports no web framework
 
-- GIVEN `theory_row(2.0, 3.0)`
-- THEN the returned mapping contains `rho`, `L`, `Lq`, `W` and `Wq`
-- AND the values equal `theoretical_metrics(2.0, 3.0)`
+- GIVEN a checkout with no web framework installed
+- WHEN `python -c "import mm1, sys; assert not any(m in sys.modules for m in ('streamlit', 'gradio', 'dash'))"` runs
+- THEN it exits 0
 
-#### Scenario: App is served from the repository root
+### Requirement: The queue animation MUST be renderable headlessly
 
-- GIVEN the repository root
-- WHEN `streamlit run app/streamlit_app.py` is launched
-- THEN the app starts without importing `src/mm1` from an absolute path
+`view/animation.py` MUST render the queue evolution of one run to an animated file using
+`matplotlib.animation`, forcing the `Agg` backend before importing pyplot, so it needs no
+display. `render_queue_animation(run, out_dir, fps=20, max_frames=200)` MUST write both
+`cola.mp4` and `cola.gif` into `out_dir` and return their paths. The pure helpers
+`frame_frames(trace, sim_time, max_frames)` and `queue_animation_figure(run, frames)`
+MUST be importable and testable without running the encoder, so the test suite never
+depends on ffmpeg being present. Specs: S19, S20.
+
+#### Scenario: Both animation files are produced
+
+- GIVEN a completed stable run and a temporary directory
+- WHEN `render_queue_animation(run, tmp_path)` is called
+- THEN `cola.mp4` and `cola.gif` both exist and are non-empty
+- AND no display was opened
+
+#### Scenario: Frame sampling is bounded and monotonic
+
+- GIVEN a `queue_trace` of 500 entries and `max_frames = 50`
+- WHEN `frame_frames(trace, sim_time, 50)` is called
+- THEN at most 50 sub-traces are returned
+- AND each starts at the first trace entry
+- AND the last one covers the whole trace
+- AND `max_frames = 0` raises `ValueError`
+
+#### Scenario: The command line exposes the animation
+
+- GIVEN `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 200 --animate --out DIR`
+- WHEN the command finishes
+- THEN it exits 0 and `DIR` contains `cola.mp4` and `cola.gif`
+- AND a run without `--animate` does not import the animation module
 
 ### Requirement: The technical document MUST cover the graded criteria
 
@@ -118,9 +144,8 @@ regenerate every reported artifact. This planning change MUST NOT execute
 `src/mm1` MUST be split into `model/`, `view/` and `controller/` (S16). Modules in
 `model/` MUST NOT import `mm1.view` or `mm1.controller`. Modules in `view/` MUST NOT
 compute domain results and MUST go through `mm1.controller.run_study` when they need
-them. `import mm1` MUST NOT import Streamlit, and `app/streamlit_app.py` MUST stay a
-thin entry point so `streamlit run app/streamlit_app.py` remains the documented
-command. Specs: S16.
+them. `import mm1` MUST NOT import any web framework or the animation stack, and the
+command line MUST stay the only entry point. Specs: S16, S19.
 
 #### Scenario: The model never depends on a presentation layer
 
@@ -130,31 +155,32 @@ command. Specs: S16.
 
 #### Scenario: The package import stays dependency-free
 
-- GIVEN a checkout in which Streamlit is not installed
+- GIVEN a checkout in which no web framework is installed
 - WHEN `python -c "import mm1, sys; assert 'streamlit' not in sys.modules"` runs
 - THEN it exits 0
 
-#### Scenario: Both front ends share one service
+#### Scenario: Every entry point shares one service
 
-- GIVEN the interactive page and the command line
-- WHEN either one needs the study results
-- THEN it calls `mm1.controller.run_study`, so the document and the live resource
-  cannot report different numbers
+- GIVEN the exported tables, the figures and the animation
+- WHEN any of them needs study results
+- THEN it goes through `mm1.controller.run_study`, so the document, the exported table
+  and the animation cannot report different numbers
 
 ### Requirement: The contribution order MUST be documented
 
 `CONTRIBUTING.md` MUST contain an ordered contribution table whose rows sequence the
-contributions from the shared foundation to the interactive Streamlit resource, MUST
-name the responsible member in every row, and MUST place the visual resource as the
-final technical deliverable (S17, S18). Its order MUST match the phase order in
-`tasks.md`. Specs: S17, S18.
+contributions from the shared foundation to the final deliverable, MUST
+name the responsible member in every row, and MUST place the document and the
+demonstration video as the final rows (S17, S18, S20). Its order MUST match the phase
+order in `tasks.md`. Specs: S17, S18, S20.
 
-#### Scenario: The visual resource is the final row
+#### Scenario: The final rows are the document and the video
 
 - GIVEN `CONTRIBUTING.md`
 - WHEN the main contribution table is read from top to bottom
-- THEN the last row is Domenica Rojas's Streamlit interactive resource and every row
+- THEN the last technical row is Domenica Rojas's queue animation and every row
   names one of the four members
+- AND the closing table ends with the technical document and the demonstration video
 
 #### Scenario: The order matches the task plan
 

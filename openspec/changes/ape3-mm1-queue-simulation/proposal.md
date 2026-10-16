@@ -39,7 +39,7 @@ Traceability: S1–S15 of `odd/tasks/ape3-mm1-queue-simulation.md`.
   trace, the three guide scenarios, replications with CI95 and relative error.
 - `mm1-reporting`: comparison table (CSV + LaTeX) and the queue/wait/
   theory-vs-simulation charts.
-- `mm1-delivery`: `python -m mm1` CLI, the Streamlit interactive resource, the
+- `mm1-delivery`: `python -m mm1` CLI with the headless queue animation, the
   technical document with the 10 control questions and demo video, and the
   team work division.
 
@@ -49,11 +49,12 @@ Traceability: S1–S15 of `odd/tasks/ape3-mm1-queue-simulation.md`.
 
 ## Approach
 
-One package `src/mm1` with a fixed public interface, consumed by a single CLI
-entry point and by `app/streamlit_app.py`. Theory formulas are implemented first
+One package `src/mm1` with a fixed public interface, consumed by a single command line
+entry point. Theory formulas are implemented first
 and become the oracle for the simulator; the simulator emits immutable records
 and traces; analysis summarizes replications; reporting renders tables and
-charts; delivery exposes everything through CLI + Streamlit. Work is split into
+charts; delivery exposes everything through the CLI and, with `--animate`, the queue
+animation. There is no interactive interface (teacher requirement). Work is split into
 four disjoint member slices so four agents can run in parallel without conflicts.
 
 ## Affected Areas
@@ -64,7 +65,7 @@ four disjoint member slices so four agents can run in parallel without conflicts
 | `docs/division-trabajo.md` | New | Spanish work division for the four members |
 | `.atl/skill-registry.md` | New | Indexed skill paths for delegated agents |
 | `src/mm1/**` | New (planned) | Package: metrics, simulation, scenarios, analysis, tables, charts, cli |
-| `app/streamlit_app.py` | New (planned) | Interactive resource (Domenica Rojas) |
+| `src/mm1/view/animation.py` | New (planned) | Headless queue animation (Domenica Rojas) |
 | `tests/**` | New (planned) | One pytest module per source module |
 | `reports/**`, `outputs/**` | New (planned) | Technical document, figures, regenerable CSV/PNG |
 
@@ -89,7 +90,7 @@ runtime impact. No source, dependency or config file outside those paths is touc
 - The signed guide text at `docs/guia/ape3_guia_simulacion_semana3.txt` (S1–S9).
 - Foundation slice (package skeleton, `pyproject.toml`, `requirements.txt`) landed
   by the orchestrator before the four member slices start.
-- `pytest` as declared runner; `SimPy`, `NumPy`, `Matplotlib`, `pandas`, `Streamlit`.
+- `pytest` as declared runner; `SimPy`, `NumPy`, `Matplotlib`, `pandas`. No web framework.
 
 ## Success Criteria
 

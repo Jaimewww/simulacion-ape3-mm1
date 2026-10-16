@@ -1,15 +1,16 @@
 """View layer — every renderer, with no domain computation.
 
-Owner: Cael Soto (charts, tables) and Domenica Rojas (the Streamlit page).
-Specs: S6, S7, S11, S16.
+Owner: Cael Soto (charts, tables) and Domenica Rojas (the queue animation).
+Specs: S6, S7, S16, S19.
 
 This package is the ``V`` of the MVC structure. Every module here turns model
 data into something a human reads: a Matplotlib figure, a comparison table, or
-the interactive Streamlit page. Views MUST NOT compute domain results; they call
+the animated queue evolution. Views MUST NOT compute domain results; they call
 ``mm1.controller`` for that.
 
-``streamlit_view`` is deliberately NOT re-exported here: importing it pulls in
-Streamlit, and ``import mm1`` must stay dependency-free.
+``animation`` is deliberately NOT re-exported here: importing it pulls in the
+animation stack, and ``import mm1`` must stay dependency-free. There is no web
+view: the practice has no interactive interface (S19).
 """
 
 from __future__ import annotations

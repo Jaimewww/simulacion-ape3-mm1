@@ -11,10 +11,36 @@ from __future__ import annotations
 import dataclasses
 import importlib
 import inspect
+import re
+import sys
+from pathlib import Path
 
 import pytest
+import tomllib
 
 import mm1
+
+ROOT = Path(__file__).resolve().parent.parent
+
+# S19: the practice must have no interactive interface, so no web framework may be
+# declared as a dependency.
+WEB_FRAMEWORKS = frozenset(
+    {"streamlit", "gradio", "dash", "flask", "fastapi", "panel", "nicegui", "reflex"}
+)
+
+
+def _dependency_names() -> set[str]:
+    """Package names declared in requirements.txt and pyproject.toml."""
+    names: set[str] = set()
+    for line in (ROOT / "requirements.txt").read_text(encoding="utf-8").splitlines():
+        entry = line.split("#", 1)[0].strip()
+        if entry:
+            names.add(re.split(r"[<>=!~\[; ]", entry, maxsplit=1)[0].strip().lower())
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    for raw in data["project"]["dependencies"]:
+        names.add(re.split(r"[<>=!~\[; ]", raw, maxsplit=1)[0].strip().lower())
+    return names
+
 
 SUBMODULES = (
     "mm1.model.metrics",
@@ -289,3 +315,25 @@ def test_cli_scenarios_mode_writes_every_reported_artifact(cli, tmp_path) -> Non
     assert (tmp_path / "comparacion.tex").stat().st_size > 0
     assert (tmp_path / "teoria_vs_simulacion.png").stat().st_size > 0
     assert (tmp_path / "comparacion_escenarios.png").stat().st_size > 0
+
+
+# --------------------------------------------------------------------------- #
+# No interactive interface (S19): the demonstration is the command line only.
+# --------------------------------------------------------------------------- #
+
+
+def test_declares_no_web_framework() -> None:
+    """No web framework is declared in requirements.txt or pyproject.toml."""
+    declared = _dependency_names()
+    assert not (declared & WEB_FRAMEWORKS), sorted(declared & WEB_FRAMEWORKS)
+
+
+def test_no_interactive_interface_remains() -> None:
+    """There is no app entry point and no web view module."""
+    assert not (ROOT / "app").exists()
+    assert not (ROOT / "src" / "mm1" / "view" / "streamlit_view.py").exists()
+
+
+def test_package_import_pulls_no_web_framework() -> None:
+    """Importing the package must not import a web framework."""
+    assert "streamlit" not in sys.modules

@@ -29,11 +29,13 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 | 7 | Controlador · servicio | `controller/study.py`: `run_study`, **el servicio que comparten la CLI y la app** | Richard Chamba | 6 | — | `richard-chamba` | `pytest tests/test_study.py -q`; con esto la CLI multi-escenario deja de fallar sin tocar la CLI | ✅ Listo |
 | 8 | Vista · tabla | `view/tables.py`: tabla comparativa de 19 columnas, CSV y LaTeX | Cael Soto | 3, 6 (contrato) | con 9 y con 5-7 | `cael-soto` | `pytest tests/test_tables.py -q` | ✅ Listo |
 | 9 | Vista · gráficas | `view/charts.py`: evolución de la cola, tiempos de espera, teoría vs simulación, comparación de escenarios | Cael Soto | 3, 6 (contrato) | con 8 y con 5-7 | `cael-soto` | `pytest tests/test_charts.py -q` | ✅ Listo |
-| 10 | **Vista · recurso interactivo** | `view/streamlit_view.py` + `app/streamlit_app.py`: sliders de λ y μ, aviso de estabilidad, animación de la cola, tabla viva y gráficas interactivas | Domenica Rojas | 7, 8, 9 | — | `domenica-rojas` | `pytest tests/test_app.py -q` y `streamlit run app/streamlit_app.py` arranca | ⬜ Pendiente |
+| 10 | **Vista · animación de la cola** | `view/animation.py`: animación headless de la evolución de la cola (mp4 + gif) que consume el comando `python -m mm1 --animate` | Domenica Rojas | 3 | con 8-9 | `domenica-rojas` | `pytest tests/test_animation.py -q` y `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 200 --animate --out outputs/` → salida 0 con `cola.mp4` y `cola.gif` | ⬜ Pendiente |
 
-> **La fila 10 es el entregable final del código: el recurso visual.**
-> Nada después de la fila 10 modifica el programa; lo que sigue es el cierre de la
-> práctica (documento, video y defensa) descrito en la sección 2.
+> **La fila 10 es el último entregable de código: la animación de la cola, que se
+> genera desde la línea de comandos.** La práctica **no tiene interfaz interactiva**
+> (lo pidió el docente): la demostración es la terminal, que es lo que la guía §5
+> siempre pidió. Nada después de la fila 10 modifica el programa; lo que sigue es el
+> cierre de la práctica (documento, video y defensa) descrito en la sección 2.
 
 ### Por qué este orden y no otro
 
@@ -46,7 +48,11 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
   **Ya integrada en `main`** (PR #5): la CLI pasó de fallar en `run_study` a fallar en
   `comparison_dataframe` de Cael, que es exactamente el desplazamiento esperado.
 - **8 y 9 no están bloqueadas por 5-7**: ambas consumen `ScenarioSummary`, que ya existe como dataclass congelada en `src/mm1/model/analysis.py` desde el andamiaje. Cael las implementó y testó con fixtures propios más el motor real, **en paralelo** con Richard. **Ya integradas en `main`** (PR #8), y con eso el comando `python -m mm1 --scenarios --out outputs/` funciona de punta a punta por primera vez.
-- **10 va último** porque muestra todo lo anterior junto y en vivo.
+- **10 ya no es una app web**: el docente pidió que la práctica no tenga interfaz
+  interactiva, así que se canceló el recurso Streamlit. Lo único que se conserva de
+  esa etapa es la **animación de la cola**, que se renderiza headless con
+  `matplotlib.animation` y se dispara con `--animate` desde el CLI. Solo depende del
+  motor (etapa 3), así que puede ir en paralelo con 8 y 9.
 
 ---
 
@@ -135,11 +141,11 @@ El proyecto está en tres capas y la dirección de dependencias es obligatoria:
 | Capa | Carpeta | Contiene | Regla |
 |------|---------|----------|-------|
 | Modelo | `src/mm1/model/` | Teoría, motor SimPy, escenarios, estadística | **No** renderiza ni escribe archivos. **Nunca** importa `mm1.view` ni `mm1.controller`. |
-| Vista | `src/mm1/view/` | Figuras, tabla comparativa, página de Streamlit | Solo presenta. **No** calcula resultados del dominio: se los pide a `mm1.controller`. |
+| Vista | `src/mm1/view/` | Figuras, tabla comparativa, animación de la cola | Solo presenta. **No** calcula resultados del dominio: se los pide a `mm1.controller`. |
 | Controlador | `src/mm1/controller/` | `run_study` y la CLI | Es la única capa que conoce a las otras dos. |
 
-`app/streamlit_app.py` es un punto de entrada fino: solo llama a
-`view.streamlit_view.render()`. Así el comando documentado sigue siendo corto.
+`python -m mm1` es **el único punto de entrada**: la práctica no tiene interfaz
+interactiva. La CLI construye el estudio, exporta la tabla y dispara las vistas.
 
 ---
 
@@ -184,6 +190,7 @@ Reglas para el agente:
 | Síntoma | Causa y solución |
 |---------|------------------|
 | `No module named mm1` | Falta el install editable: `python -m pip install -e .` (o `PYTHONPATH=src`). |
-| Querés importar `mm1` y te falta Streamlit | Correcto: `import mm1` no debe traer Streamlit. No lo agregues a `view/__init__.py`. |
+| Te falta `streamlit` o querés agregar una UI web | La práctica **no tiene interfaz interactiva** (lo pidió el docente). No agregues ningún framework web: la demostración es la terminal. Hay un test que falla si declarás uno. |
+| El video animado no se genera | `--animate` necesita `ffmpeg` en el PATH (está instalado). El test de la animación no lo necesita: los helpers puros se testean sin encoder. |
 | `ρ` te da 1,5 con λ = 2,0 y μ = 3,0 | Estás usando `ρ = μ/λ`, que es el typo de la guía §5.1. Va `ρ = λ/μ`. |
 | El sistema "no es estable" con λ = 3,0 y μ = 3,0 | Es correcto: la guía exige `λ < μ` y el programa imprime `El sistema no es estable`. |

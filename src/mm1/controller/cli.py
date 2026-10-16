@@ -12,11 +12,13 @@ The command has two modes:
 * **the guide's three scenarios** — ``--scenarios`` (the default when no rates
   are given) runs the whole study through ``controller.study.run_study`` and
   writes the comparison table as CSV **and** LaTeX, plus the figures, into
-  ``--out``. It exists so the
-  CLI has exactly one orchestration path, the same one the Streamlit page uses.
+  ``--out``. ``--animate`` additionally renders the queue animation there.
+  It exists so the
+  CLI has exactly one orchestration path, the same service every renderer uses.
 
 The console report is deliberately plain text: the printable comparison table
-and the figures belong to ``mm1.view``.
+and the figures belong to ``mm1.view``. This is the only entry point: the
+practice has no interactive interface (teacher requirement).
 """
 
 from __future__ import annotations
