@@ -27,8 +27,8 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 | 5 | Modelo · escenarios | `model/scenarios.py`: los 3 escenarios de la guía y las réplicas con semillas | Richard Chamba | 3 | con 4 | `richard-chamba` | `pytest tests/test_scenarios.py -q` | ⬜ Pendiente |
 | 6 | Modelo · análisis | `model/analysis.py`: agregación, IC 95 % y error relativo teórico vs simulado | Richard Chamba | 5 | — | `richard-chamba` | `pytest tests/test_analysis.py -q` | ⬜ Pendiente |
 | 7 | Controlador · servicio | `controller/study.py`: `run_study`, **el servicio que comparten la CLI y la app** | Richard Chamba | 6 | — | `richard-chamba` | `pytest tests/test_study.py -q`; con esto la CLI multi-escenario deja de fallar sin tocar la CLI | ⬜ Pendiente |
-| 8 | Vista · tabla | `view/tables.py`: tabla comparativa de 19 columnas, CSV y LaTeX | Cael Soto | 7 | con 9 | `cael-soto` | `pytest tests/test_tables.py -q` | ⬜ Pendiente |
-| 9 | Vista · gráficas | `view/charts.py`: evolución de la cola, tiempos de espera, teoría vs simulación, comparación de escenarios | Cael Soto | 7 | con 8 | `cael-soto` | `pytest tests/test_charts.py -q` | ⬜ Pendiente |
+| 8 | Vista · tabla | `view/tables.py`: tabla comparativa de 19 columnas, CSV y LaTeX | Cael Soto | 3, 6 (contrato) | con 9 y con 5-7 | `cael-soto` | `pytest tests/test_tables.py -q` | ⬜ Pendiente |
+| 9 | Vista · gráficas | `view/charts.py`: evolución de la cola, tiempos de espera, teoría vs simulación, comparación de escenarios | Cael Soto | 3, 6 (contrato) | con 8 y con 5-7 | `cael-soto` | `pytest tests/test_charts.py -q` | ⬜ Pendiente |
 | 10 | **Vista · recurso interactivo** | `view/streamlit_view.py` + `app/streamlit_app.py`: sliders de λ y μ, aviso de estabilidad, animación de la cola, tabla viva y gráficas interactivas | Domenica Rojas | 7, 8, 9 | — | `domenica-rojas` | `pytest tests/test_app.py -q` y `streamlit run app/streamlit_app.py` arranca | ⬜ Pendiente |
 
 > **La fila 10 es el entregable final del código: el recurso visual.**
@@ -43,7 +43,7 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 - **6 necesita 5** porque agregar réplicas requiere que existan las corridas.
 - **7 es la bisagra**: hasta acá hay piezas sueltas; con `run_study` existe *una* forma
   de obtener todos los resultados. Por eso la app y el documento no pueden divergir.
-- **8 y 9 son independientes entre sí** y ambos consumen `ScenarioSummary`.
+- **8 y 9 no están bloqueadas por 5-7**: ambas consumen `ScenarioSummary`, que ya existe como dataclass congelada en `src/mm1/model/analysis.py` desde el andamiaje. Cael puede implementarlas y testearlas con fixtures propios más el motor real (etapa 3, ya listo), **en paralelo** con Richard. Lo único que espera a la etapa 7 es la verificación end-to-end de la tarea 5.5, que vive en la fase de integración.
 - **10 va último** porque muestra todo lo anterior junto y en vivo.
 
 ---
