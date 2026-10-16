@@ -237,9 +237,11 @@ pytest
 La configuración en `pyproject.toml` busca las pruebas en `tests/` y agrega `src/`
 al *path* de importación, por lo que `pytest` funciona desde la raíz del
 repositorio. Las pruebas están repartidas así: `tests/test_smoke.py` cubre la
-estructura congelada y el comportamiento del CLI (38 pruebas), `tests/test_metrics.py`
-cubre la teoría (17) y `tests/test_simulation.py` cubre el motor SimPy (23). En total
-**78 pruebas**. Cada integrante agrega sus pruebas primero (enfoque
+estructura congelada y el comportamiento del CLI (38), `tests/test_metrics.py` la teoría
+(17), `tests/test_simulation.py` el motor SimPy (23), `tests/test_scenarios.py` el
+catálogo y las réplicas (9), `tests/test_analysis.py` la agregación con IC 95 % y error
+relativo (58) y `tests/test_study.py` el servicio compartido (5). En total
+**150 pruebas**. Cada integrante agrega sus pruebas primero (enfoque
 *test-first*) en su archivo correspondiente.
 
 ## Reparto de trabajo
@@ -265,9 +267,11 @@ El detalle de tareas, dependencias y criterios de aceptación está en
 | --- | --- |
 | Modelo teórico M/M/1 (`model/metrics.py`) | **✅ Listo** — Richard Chamba; 17 pruebas pasan |
 | Motor M/M/1 en SimPy (`model/simulation.py`) | **✅ Listo** — Jaime Landazuri; 23 pruebas pasan y el motor es consistente contra la teoría |
-| CLI de una corrida (`python -m mm1 --lam … --mu …`) | **✅ Listo** — Jaime Landazuri; el modo multi-escenario espera las etapas 7, 8 y 9 |
+| Los 3 escenarios de la guía con réplicas reproducibles (`model/scenarios.py`, `controller/study.py`) | **✅ Listo** — Richard Chamba; 30 réplicas por escenario y semillas derivadas de la base |
+| Análisis de réplicas: IC 95 % de t de Student y error relativo (`model/analysis.py`) | **✅ Listo** — Richard Chamba; 58 pruebas |
+| CLI de una corrida (`python -m mm1 --lam … --mu …`) | **✅ Listo** — Jaime Landazuri; el modo multi-escenario espera las etapas 8 y 9 (la 7 ya está integrada) |
 | Gráficas del comportamiento de la cola y de los tiempos de espera | **Pendiente** (`charts.py`) |
-| Tabla comparativa teórico vs. simulado | **Pendiente** (`tables.py`, `analysis.py`) |
+| Tabla comparativa teórico vs. simulado | **Parcial** — el análisis con IC 95 % y error relativo ya está (`model/analysis.py`); falta el formateo de la tabla y los exports CSV/LaTeX (`view/tables.py`, Cael Soto) |
 | Documento técnico | **Pendiente** (`reports/`) |
 | Video de demostración | **Pendiente** (`reports/`) |
 | Recurso interactivo (Streamlit) | **Pendiente** (`src/mm1/view/streamlit_view.py` + entrada `app/streamlit_app.py`) |
