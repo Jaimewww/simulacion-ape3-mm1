@@ -3,13 +3,18 @@
 Repositorio grupal de la **APE 003** de la asignatura **Simulación** (5.º ciclo,
 FEIRNNR — Carrera de Computación). El paquete Python del proyecto implementa —de
 forma incremental, por integrante— un modelo de colas **M/M/1** con **SimPy**, lo
-compara contra las fórmulas teóricas y genera tablas, gráficas y un recurso
-interactivo en **Streamlit**.
+compara contra las fórmulas teóricas y genera la tabla comparativa, las gráficas y
+la animación de la cola.
 
-> Estado actual: **estructura base y modelo teórico completos**. Richard Chamba
-> implementó `ρ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad, con 17 pruebas
-> de teoría. El motor de simulación, los escenarios, el análisis, las gráficas
-> y la app interactiva siguen **pendientes**.
+> Estado actual: **el proyecto funciona de punta a punta desde la línea de comandos**.
+> El motor SimPy, los tres escenarios, el análisis con intervalo de confianza,
+> la tabla comparativa, las gráficas y el CLI están integrados, con **169 pruebas**.
+> Falta la animación de la cola (etapa 10, Domenica Rojas) y el documento técnico
+> con el video de demostración.
+>
+> Esta práctica **no tiene interfaz interactiva**: lo pidió el docente. La
+> demostración es la terminal, que es lo que la guía §5 pide (Python + SimPy +
+> NumPy + Matplotlib).
 
 ## Datos de la práctica
 
@@ -21,7 +26,7 @@ interactivo en **Streamlit**.
 | Título | Simulación de un sistema de líneas de espera M/M/1 mediante SimPy |
 | Docente | José O. Guamán Q. |
 | Integrantes | Jaime Landazuri, Richard Chamba, Cael Soto, Domenica Rojas |
-| Recurso interactivo | Aplicación **Streamlit** |
+| Recurso gráfico | Animación de la cola (`matplotlib.animation`), sin interfaz interactiva |
 | Sistema operativo objetivo | Linux o macOS |
 
 ## Objetivo
@@ -101,18 +106,18 @@ Valores teóricos redondeados a seis decimales cuando corresponde.
 
 ```text
 .
-├── app/
-│   └── streamlit_app.py        # Entrada fina del recurso interactivo — Domenica Rojas
 ├── docs/
 │   ├── guia/                   # Guía firmada APE 003 (PDF + extracción de texto)
-│   └── division-trabajo.md     # Reparto de trabajo del equipo
+│   ├── division-trabajo.md     # Reparto de trabajo del equipo
+│   └── resultados_escenarios.md # Medición oficial de los 3 escenarios
 ├── openspec/                   # Plan SDD: propuesta, specs, diseño y tareas
 │   └── changes/ape3-mm1-queue-simulation/
 ├── odd/                        # Seguimiento ODD (ignorado por git)
 │   └── tasks/ape3-mm1-queue-simulation.md
-├── outputs/                    # Artefactos generados: CSV, PNG (ignorado por git)
+├── outputs/                    # Artefactos generados: CSV, TeX, PNG, video (ignorado por git)
 ├── reports/
-│   └── README.md               # Qué va en reports/ y regla de artefactos
+│   ├── README.md               # Qué va en reports/ y regla de artefactos
+│   └── figures/                # Figuras definitivas del documento — Cael Soto
 ├── src/
 │   └── mm1/                    # Paquete Python (instalable), en tres capas MVC
 │       ├── __init__.py         # API pública congelada (25 nombres)
@@ -124,13 +129,12 @@ Valores teóricos redondeados a seis decimales cuando corresponde.
 │       │   └── analysis.py     # Agregación, IC 95 % y error relativo — Richard Chamba
 │       ├── view/               # CAPA VISTA: presenta, no calcula
 │       │   ├── tables.py       # Tabla comparativa (CSV/LaTeX) — Cael Soto
-│       │   ├── charts.py       # Gráficas (Matplotlib) — Cael Soto
-│       │   └── streamlit_view.py  # Página interactiva — Domenica Rojas
+│       │   ├── charts.py       # Gráficas estáticas (Matplotlib) — Cael Soto
+│       │   └── animation.py    # Animación de la cola — Domenica Rojas
 │       └── controller/         # CAPA CONTROLADOR: orquesta las otras dos
 │           ├── study.py        # run_study, servicio compartido — Richard Chamba
 │           └── cli.py          # Punto de entrada por línea de comandos — Jaime Landazuri
-├── tests/
-│   └── test_smoke.py           # Prueba estructural del andamiaje (única prueba base)
+├── tests/                      # Un módulo de pytest por módulo de código
 ├── .gitignore
 ├── CONTRIBUTING.md             # Orden de aportes y reglas de trabajo del equipo
 ├── pyproject.toml              # Empaquetado, ruff y configuración de pytest
@@ -141,9 +145,9 @@ Valores teóricos redondeados a seis decimales cuando corresponde.
 > Estructura **MVC** (patrón de diseño pedido para el proyecto):
 > `model/` tiene el dominio y no conoce la presentación; `view/` presenta y no calcula;
 > `controller/` es la única capa que conoce a las otras dos.
-> `view.streamlit_view` pide los resultados a `controller.run_study`, así la página
-> interactiva y el documento muestran siempre los mismos números.
-> `import mm1` **no** importa Streamlit: la página se carga solo cuando se abre la app.
+> Todo pasa por `controller.run_study`, así la tabla exportada, las figuras y la
+> animación muestran siempre los mismos números.
+> No hay `app/` ni interfaz web: la práctica no debe tener interfaz interactiva.
 
 > `odd/` contiene el seguimiento local del flujo ODD y **no se versiona**;
 > `openspec/` sí se versiona. Los artefactos generados (CSV, PNG, LaTeX) se
@@ -172,19 +176,10 @@ con `[project].dependencies` de `pyproject.toml`. No hay versiones fijadas
 
 ## Cómo ejecutar
 
-### Recurso interactivo (Streamlit)
+### Línea de comandos (CLI) — la única interfaz
 
-```bash
-streamlit run app/streamlit_app.py
-```
-
-La app es la página de aterrizaje del recurso interactivo. Los controles
-(deslizadores, gráficas interactivas y tablas) todavía están **pendientes**: son
-parte del entregable de Domenica Rojas.
-
-### Línea de comandos (CLI)
-
-La CLI tiene dos modos. `python -m mm1 --help` lista la superficie completa.
+Esta práctica **no tiene interfaz interactiva**. Todo se hace desde la terminal.
+`python -m mm1 --help` lista la superficie completa.
 
 **Una corrida** (`--lam` y `--mu`). Corre una sola simulación y muestra los valores
 simulados junto a los teóricos: es la prueba en vivo para la defensa oral y el modo
@@ -240,7 +235,7 @@ estructura congelada y el comportamiento del CLI (38), `tests/test_metrics.py` l
 catálogo y las réplicas (9), `tests/test_analysis.py` la agregación con IC 95 % y error
 relativo (58), `tests/test_study.py` el servicio compartido (5), y `tests/test_tables.py`
 con `tests/test_charts.py` la tabla de 19 columnas, sus exports y las figuras (18 entre
-los dos). En total **168 pruebas**. Cada integrante agrega sus pruebas primero (enfoque
+los dos). En total **169 pruebas**. Cada integrante agrega sus pruebas primero (enfoque
 *test-first*) en su archivo correspondiente.
 
 ## Reparto de trabajo
@@ -250,11 +245,11 @@ los dos). En total **168 pruebas**. Cada integrante agrega sus pruebas primero (
 | Jaime Landazuri | Modelo + Controlador | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` |
 | Richard Chamba | Modelo + Controlador | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py`, `tests/test_study.py` |
 | Cael Soto | Vista | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` |
-| Domenica Rojas | Vista + cierre | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
+| Domenica Rojas | Vista + cierre | `src/mm1/view/animation.py`, `tests/test_animation.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` |
 
-**El orden en que se hacen los aportes —de la base al recurso visual, que es el
-entregable final del código— está en [`CONTRIBUTING.md`](CONTRIBUTING.md).** Ese es
-el documento que hay que mirar para saber qué hacer ahora y qué todavía no.
+**El orden en que se hacen los aportes —de la base al entregable final del código—
+está en [`CONTRIBUTING.md`](CONTRIBUTING.md).** Ese es el documento que hay que mirar
+para saber qué hacer ahora y qué todavía no.
 
 El detalle de tareas, dependencias y criterios de aceptación está en
 [`docs/division-trabajo.md`](docs/division-trabajo.md) y en el plan técnico
@@ -271,15 +266,17 @@ El detalle de tareas, dependencias y criterios de aceptación está en
 | CLI completa (`python -m mm1 --lam … --mu …` y `--scenarios --out …`) | **✅ Listo** — Jaime Landazuri; los dos modos funcionan de punta a punta |
 | Gráficas del comportamiento de la cola y de los tiempos de espera | **✅ Listo** — Cael Soto; en `reports/figures/` y regenerables con el CLI |
 | Tabla comparativa teórico vs. simulado | **✅ Listo** — Cael Soto; 19 columnas con IC 95 % y error relativo, exportada a `comparacion.csv` y `comparacion.tex` |
+| Resultados medidos de los 3 escenarios | **✅ Listo** — en `docs/resultados_escenarios.md`, con el comando que los regenera |
+| Animación de la cola (`view/animation.py` + `--animate`) | **Pendiente** (etapa 10, Domenica Rojas) |
 | Documento técnico | **Pendiente** (`reports/`) |
 | Video de demostración | **Pendiente** (`reports/`) |
-| Recurso interactivo (Streamlit) | **Pendiente** (`src/mm1/view/streamlit_view.py` + entrada `app/streamlit_app.py`) |
 | Defensa oral y demostración | **Pendiente** |
 
-Los valores teóricos aparecen en la sección *Escenarios*. El motor ya corre: la CLI
-de una corrida compara teoría y simulación en vivo. Lo que sigue pendiente son los
-resultados definitivos del documento (tabla comparativa y figuras del reporte), que
-dependen de las etapas 5 a 9, y por eso no se incluyen números aquí.
+Los valores teóricos aparecen en la sección *Escenarios* y los **medidos** en
+[`docs/resultados_escenarios.md`](docs/resultados_escenarios.md): la corrida oficial de
+30 réplicas por escenario, con la tabla comparativa, el intervalo de confianza al 95 %
+y el error relativo de cada métrica. La teoría cae **dentro** del intervalo simulado en
+los tres escenarios. Falta la animación y el documento.
 
 ## Enlaces útiles
 

@@ -4,14 +4,16 @@ context: |
   Project: APE 003 - "Simulación de un sistema de líneas de espera
     M/M/1 mediante SimPy" (university group practice, 4 members:
     J. Landazuri, R. Chamba, C. Soto, D. Rojas).
-  Tech stack: Python 3.x, SimPy, NumPy, Matplotlib, pandas, Streamlit,
-    pytest for tests, ruff for linting.
+  Tech stack: Python 3.x, SimPy, NumPy, Matplotlib, pandas,
+    pytest for tests, ruff for linting. No web framework: the practice
+    must have no interactive interface (teacher requirement).
   Architecture: one package `src/mm1` in three MVC layers — `model/`
     (metrics, simulation, scenarios, analysis), `view/` (tables, charts,
-    streamlit_view) and `controller/` (study, cli). `app/streamlit_app.py`
-    is a thin entry point for the interactive resource. The model imports no
+    animation) and `controller/` (study, cli). The model imports no
     other layer; the view renders and never computes; `run_study` is the one
-    service shared by the CLI and the web page. Generated CSV/PNG live in
+    service every entry point shares. `python -m mm1` is the only entry
+    point and `--animate` renders the queue animation headlessly.
+    Generated CSV/TeX/PNG/video live in
     `outputs/`.
   Testing: pytest, strict TDD (RED -> GREEN -> PRESERVE -> REFACTOR);
     one test module per source module.
@@ -25,7 +27,7 @@ testing:
   strict_tdd: true
   test_command: "python -m pytest -q"
   focused_test_command: "python -m pytest tests/test_<module>.py -q"
-  lint_command: "python -m ruff check src tests app"
+  lint_command: "python -m ruff check src tests"
   coverage_command: "python -m pytest --cov=mm1 --cov-report=term-missing"
   layers:
     unit: true
@@ -33,9 +35,11 @@ testing:
     e2e: false
   notes: >
     `python -m mm1` (src/mm1/controller/cli.py) is the only executable
-    orchestration entry point. The Streamlit resource is covered by
-    unit tests over its pure helper functions (theory table, stability
-    guard, chart payloads); no browser E2E runner is planned.
+    orchestration entry point. The animation is covered by
+    unit tests over its pure helper functions (frame sampling, figure
+    construction) plus its produced files; the suite does not depend on
+    ffmpeg. No browser E2E runner is planned because there is no
+    interface to drive.
 
 rules:
   proposal:
@@ -68,7 +72,7 @@ rules:
     test_command: "python -m pytest -q"
   verify:
     test_command: "python -m pytest -q"
-    lint_command: "python -m ruff check src tests app"
+    lint_command: "python -m ruff check src tests"
     build_command: ""
     coverage_threshold: 0
   archive:

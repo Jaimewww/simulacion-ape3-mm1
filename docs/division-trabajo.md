@@ -16,7 +16,7 @@ todo lo evaluado en la guía (defensa, implementación y documento) quede cubier
 
 La guía califica tres criterios: **Defensa oral y demostración (4/10)**,
 **Implementación (3/10)** y **Documento (3/10)**. Los bloques 2, 3 y 4 producen la
-implementación; el bloque 5 produce el recurso interactivo y el documento; el
+implementación; el bloque 5 produce la animación de la cola y el documento; el
 bloque 1 habilita a los demás.
 
 ---
@@ -29,7 +29,7 @@ bloque 1 habilita a los demás.
 | 2 | Jaime Landazuri | Motor de simulación SimPy y línea de comandos | `src/mm1/model/simulation.py`, `src/mm1/controller/cli.py`, `tests/test_simulation.py`, `tests/test_smoke.py` | S4, S7, S12, S13 | `feat/jaime-simulation-cli` |
 | 3 | Richard Chamba | Modelo teórico, escenarios, análisis estadístico y servicio de estudio | `src/mm1/model/metrics.py`, `src/mm1/model/scenarios.py`, `src/mm1/model/analysis.py`, `src/mm1/controller/study.py`, `tests/test_metrics.py`, `tests/test_scenarios.py`, `tests/test_analysis.py`, `tests/test_study.py` | S3, S5, S6, S16 | `feat/richard-theory-analysis` |
 | 4 | Cael Soto | Tabla comparativa y gráficas | `src/mm1/view/tables.py`, `src/mm1/view/charts.py`, `tests/test_tables.py`, `tests/test_charts.py`, `reports/figures/**` | S6, S7 | `feat/cael-tables-charts` |
-| 5 | Domenica Rojas | Recurso interactivo y documento técnico | `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | S8, S9, S11, S15, S18 | `feat/domenica-streamlit-document` |
+| 5 | Domenica Rojas | Animación de la cola y documento técnico | `src/mm1/view/animation.py`, `tests/test_animation.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**` | S8, S9, S19, S20 | `domenica-rojas` |
 
 **El orden en que se hacen los aportes (de la base al recurso visual, que es el
 entregable final del código) está en
@@ -55,7 +55,7 @@ se avisa al equipo antes de tocar código.
    - Pruebas completas: `python -m pytest -q`
    - Estilo: `python -m ruff check src tests app`
    - Demostración / regeneración de resultados: `python -m mm1 --out outputs/`
-   - Recurso interactivo: `streamlit run app/streamlit_app.py`
+   - Animación de la cola: `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 200 --animate --out outputs/`
 4. **`outputs/` no se versiona:** los CSV y PNG se regeneran con el comando de
    demostración. Las figuras que van al documento se copian a `reports/figures/`.
 5. **Decisión técnica obligatoria:** la guía §5.1 imprime `ρ = μ / λ`, pero su
@@ -75,7 +75,7 @@ se avisa al equipo antes de tocar código.
 
 **Entregables**
 
-- Dependencias fijadas: SimPy, NumPy, Matplotlib, pandas, Streamlit, pytest,
+- Dependencias fijadas: SimPy, NumPy, Matplotlib, pandas, pytest,
   pytest-cov, ruff.
 - `pyproject.toml` con layout `src/`, configuración de pytest y ruff.
 - `src/mm1/__init__.py` que reexporta la interfaz pública congelada.
@@ -135,7 +135,7 @@ tamaños de cola.
 - Dos ejecuciones con la misma semilla dan clientes y métricas idénticos.
 
 **Prerrequisitos:** bloque 1. **Lo consumen:** bloques 3 (escenarios), 4 (tablas y
-gráficas) y 5 (recurso interactivo).
+gráficas) y 5 (animación de la cola y documento).
 
 **Rama y PR:** `feat/jaime-simulation-cli` → PR a `main`.
 
@@ -263,45 +263,57 @@ orden 1, 2, 3.
 
 ---
 
-## 8. Bloque 5 — Recurso interactivo y documento (Domenica Rojas)
+## 8. Bloque 5 — Animación de la cola y documento (Domenica Rojas)
 
-**Archivos propios:** `src/mm1/view/streamlit_view.py`, `app/streamlit_app.py`, `tests/test_app.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
+**Archivos propios:** `src/mm1/view/animation.py`, `tests/test_animation.py`, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
 **Specs:** S8 (10 preguntas de control), S9 (criterios de evaluación),
-S11 (recurso gráfico interactivo), S15 (Streamlit), S18 (es el entregable final).
+S19 (sin interfaz interactiva; animación headless), S20 (esta re-planificación).
 
-**Interfaz que debe cumplir** (vive en `src/mm1/view/streamlit_view.py`;
-`app/streamlit_app.py` es solo la entrada fina que llama a `render()`)
+> **La práctica NO tiene interfaz interactiva.** Lo pidió el docente. Se canceló el
+> recurso Streamlit: no hay `app/`, no hay página web, no hay deslizadores. Todo se
+> hace desde la línea de comandos, que es lo que la guía §5 pide (Python + SimPy +
+> NumPy + Matplotlib). Lo único que sobrevive de la etapa anterior es la **animación
+> de la cola**, que se renderiza sin pantalla y se dispara con `--animate`.
+
+**Interfaz que debe cumplir** (vive en `src/mm1/view/animation.py`)
 
 ```python
-def render() -> None
-def theory_row(lam: float, mu: float) -> dict[str, float]
-def stability_message(lam: float, mu: float) -> str
-def scenario_table(summaries) -> "pandas.DataFrame"
-def build_queue_figure(run) -> "matplotlib.figure.Figure"
-def build_comparison_figure(summaries) -> "matplotlib.figure.Figure"
+def render_queue_animation(run: ScenarioRun, out_dir: str | Path,
+                           fps: int = 20, max_frames: int = 200) -> list[Path]
+def frame_frames(trace: Sequence[tuple[float, int]], sim_time: float,
+                 max_frames: int) -> list[list[tuple[float, int]]]
+def queue_animation_figure(run: ScenarioRun, frames: int) -> tuple[Figure, Callable[[int], tuple]]
 ```
 
-**Regla de capa:** la vista **no calcula** resultados del dominio. Los datos salen de
-`mm1.controller.study.run_study`, y las figuras y la tabla se piden a
-`mm1.view.charts` y `mm1.view.tables`. Así la página y el documento nunca muestran
-números distintos.
+**Regla de capa:** la vista **no calcula** resultados del dominio. El `ScenarioRun`
+llega ya corrido desde el motor; la animación solo lo dibuja. El flag `--animate`
+lo agrega **Jaime** en `controller/cli.py`: vos no tocás ese archivo.
 
-**Entregables — recurso interactivo (Streamlit)**
+**Entregables — animación de la cola**
 
-- Deslizadores para λ y μ.
-- Panel de `ρ` con aviso de estabilidad (bloquea la ejecución si `λ >= μ`).
-- Botón para ejecutar la simulación.
-- Animación de la evolución de la cola a partir de `queue_trace`.
-- Tabla en vivo que compara teoría y simulación.
-- Al menos dos gráficas interactivas sobre los tres escenarios.
-- Verificación manual: `streamlit run app/streamlit_app.py`.
+- `render_queue_animation` escribe `cola.mp4` (writer `ffmpeg`) **y** `cola.gif`
+  (writer `pillow`) en `out_dir`, y devuelve los dos paths.
+- Forzar `matplotlib.use("Agg")` **antes** de importar pyplot, para que no necesite
+  pantalla. Verificado: funciona sin display con ffmpeg instalado.
+- `frame_frames` muestrea la traza: como máximo `max_frames` sub-trazas, cada una
+  arrancando en la primera entrada, la última cubriendo la traza entera.
+- Los helpers puros se testean **sin ejecutar el encoder**, así la suite no depende
+  de que ffmpeg esté presente.
+- Cerrar la figura después de guardar; sin fechas ni marcas de tiempo, para que la
+  misma entrada rinda la misma animación.
+- Ejes, título y leyenda en español (van al informe). Identificadores y comentarios
+  del código en inglés.
 
 **Entregables — documento técnico (`reports/`)**
 
-- Estructura y presentación: título, objetivos, modelo matemático con la nota de
-  la decisión D1, procedimiento y escenarios.
-- Procedimiento y resultados con evidencias: tabla comparativa, figuras y el
-  comando `python -m mm1 --out outputs/` que las reproduce.
+- Estructura y presentación: título, datos de la práctica y los 4 integrantes,
+  objetivos, modelo matemático con la nota de la decisión D1, procedimiento y
+  escenarios.
+- Procedimiento y resultados con evidencias: la tabla comparativa, el intervalo de
+  confianza, el error relativo, las figuras, la animación y el comando
+  `python -m mm1 --scenarios --replications 30 --sim-time 1000 --out outputs/` que las
+  reproduce. **Usá los números medidos de `docs/resultados_escenarios.md`** en vez de
+  recalcularlos: ese archivo es la fuente de verdad y trae la tabla lista para pegar.
 - Respuestas a las **10 preguntas de control** de la guía §7, cada una con la
   evidencia simulada que la respalda. Las 10 son estas (textuales de la guía):
 
@@ -314,8 +326,12 @@ números distintos.
   7. ¿Por qué SimPy utiliza una distribución exponencial para generar los tiempos?
   8. ¿Qué sucede con la cola cuando λ se aproxima a μ?
   9. ¿Por qué los resultados simulados pueden ser diferentes de los resultados teóricos?
+     (la respuesta medida está en `docs/resultados_escenarios.md` §4b: a ρ = 0.967
+     una corrida suelta se desvía hasta 74 % y aun así el simulador es correcto;
+     es cola pesada, y la media de 30 réplicas mete la teoría dentro del IC 95 %)
   10. ¿Qué ocurriría si λ fuera mayor que μ?  (la guía lo imprime con `??`; se
       responde una sola vez)
+
 - Conclusiones relacionadas con los tres objetivos de la práctica y con el
   comportamiento esperado de la guía §6 (el tiempo de espera y la cola crecen
   cuando λ se acerca a μ).
@@ -323,17 +339,18 @@ números distintos.
 
 **Criterios de aceptación**
 
-- `python -m pytest tests/test_app.py -q` pasa.
-- `streamlit run app/streamlit_app.py` arranca sin errores de importación.
-- Con λ = 3.0 y μ = 3.0 la aplicación muestra el bloqueo de estabilidad y no
-  ejecuta la simulación.
+- `python -m pytest tests/test_animation.py -q` pasa.
+- `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 200 --animate --out outputs/` sale 0 y
+  deja `cola.mp4` y `cola.gif` no vacíos (el flag lo agrega Jaime).
+- Ningún archivo del proyecto menciona un framework web ni hay directorio `app/`.
 - Las 10 preguntas están numeradas y respondidas; tres de ellas citadas
   textualmente desde la guía.
 - Cada figura citada por el documento existe en `reports/figures/`.
 
-**Prerrequisitos:** bloques 1, 2, 3 y 4 (usa sus funciones y sus figuras).
+**Prerrequisitos:** el motor (bloque 2) para tener un `ScenarioRun` real, y las
+figuras del bloque 4. Las etapas 8 y 9 no la bloquean: puede ir en paralelo.
 
-**Rama y PR:** `feat/domenica-streamlit-document` → PR a `main`.
+**Rama y PR:** `domenica-rojas` (persistente, no se borra) → PR a `main`.
 
 ---
 
@@ -354,7 +371,7 @@ porque los archivos son disjuntos.
 | 7 | Controlador · servicio `run_study` | `feat/richard-theory-analysis` | 6 | `python -m pytest tests/test_study.py -q` |
 | 8 | Vista · tabla comparativa | `feat/cael-tables-charts` | 7 | `python -m pytest tests/test_tables.py -q` |
 | 9 | Vista · gráficas | `feat/cael-tables-charts` | 7 | `python -m pytest tests/test_charts.py -q` |
-| 10 | **Vista · recurso interactivo** (entregable final del código) | `feat/domenica-streamlit-document` | 7, 8, 9 | `python -m pytest tests/test_app.py -q` y `streamlit run app/streamlit_app.py` |
+| 10 | **Vista · animación de la cola** (último entregable de código) | `domenica-rojas` | 3 | `python -m pytest tests/test_animation.py -q` y `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 200 --animate --out outputs/` |
 
 Las etapas 2 y 3 pueden hacerse en paralelo, igual que 4 con 5 y 8 con 9. Todos los PR
 apuntan a `main` y ninguno debe superar las 400 líneas escritas; si un bloque las
@@ -440,25 +457,29 @@ Evidencia obligatoria: salida de
 de archivos generados por "python -m mm1 --replications 5 --sim-time 300 --out outputs/".
 ```
 
-**Bloque 5 — recurso interactivo y documento (Domenica)**
+**Bloque 5 — animación de la cola y documento (Domenica)**
 
 ```text
 Tarea: ejecuta las tareas del bloque 5 (6.1 a 6.8) de tasks.md.
-Archivos permitidos: src/mm1/view/streamlit_view.py, app/streamlit_app.py, tests/test_app.py, `reports/ape3_mm1.tex`, `reports/ape3_mm1.pdf`, `reports/README.md`, `reports/assets/**`.
-Interfaz: render() y los helpers puros con las firmas exactas de design.md
-(viven en src/mm1/view/streamlit_view.py; app/streamlit_app.py es solo la entrada fina).
-La vista no calcula: los resultados se los pide a mm1.controller.study.run_study,
-y las figuras y la tabla a mm1.view.charts y mm1.view.tables.
-El recurso debe tener deslizadores para λ y μ, aviso de estabilidad, botón de
-ejecución, animación de la cola, tabla teoría vs simulación y al menos dos
-gráficas interactivas.
-El documento debe responder las 10 preguntas de control de la guía §7 e incluir
-el enlace al video de demostración.
+Archivos permitidos: src/mm1/view/animation.py, tests/test_animation.py,
+reports/ape3_mm1.tex, reports/ape3_mm1.pdf, reports/README.md, reports/assets/**.
+Interfaz: render_queue_animation, frame_frames y queue_animation_figure con las
+firmas exactas de design.md.
+La practica NO tiene interfaz interactiva: no hay app/, no hay pagina web, no hay
+deslizadores. La animacion es un archivo (mp4 y gif) que se genera sin pantalla con
+matplotlib.animation. Nada de streamlit.
+La vista no calcula: recibe un ScenarioRun ya corrido por el motor y solo lo dibuja.
+Forza matplotlib.use("Agg") ANTES de importar pyplot, y cierra la figura al guardar.
+Los helpers puros (frame_frames, queue_animation_figure) se testean sin ejecutar el
+encoder, para que la suite no dependa de ffmpeg.
+El flag --animate del CLI lo agrega Jaime en src/mm1/controller/cli.py: no toques ese archivo.
+El documento usa los numeros medidos de docs/resultados_escenarios.md, responde las 10
+preguntas de control de la guia §7 e incluye el enlace al video de demostracion.
 No toques src/mm1/model/, src/mm1/controller/, ni src/mm1/view/tables.py y
-src/mm1/view/charts.py; de tests/ solo tests/test_app.py.
-Evidencia obligatoria: salida de "python -m pytest tests/test_app.py -q",
-confirmación de que "streamlit run app/streamlit_app.py" arranca, y la lista de
-secciones y figuras del documento.
+src/mm1/view/charts.py; de tests/ solo tests/test_animation.py.
+Evidencia obligatoria: salida de "python -m pytest tests/test_animation.py -q",
+la lista de secciones y figuras del documento, y confirmacion de que ningun archivo
+menciona un framework web.
 ```
 
 ### 10.3 Evidencia obligatoria en cada entrega del agente
@@ -469,7 +490,7 @@ secciones y figuras del documento.
 | Prueba RED | Comando ejecutado y su salida fallida |
 | Prueba GREEN | `python -m pytest tests/test_<modulo>.py -q` con el resumen final |
 | Estilo | `python -m ruff check src tests app` sin hallazgos |
-| Demostración | Salida de `python -m mm1 --out outputs/` o de `streamlit run` |
+| Demostración | Salida de `python -m mm1 --scenarios --out outputs/` y de `--animate` |
 | Riesgos | Qué quedó pendiente y qué no se pudo verificar |
 
 ---
@@ -478,7 +499,7 @@ secciones y figuras del documento.
 
 | Criterio de la guía §8 | Peso | Responsables |
 |------------------------|------|--------------|
-| Defensa oral y demostración | 4/10 | Todos; Jaime explica el motor y la CLI, Richard el modelo matemático, Cael las gráficas, Domenica el recurso interactivo y el documento |
+| Defensa oral y demostración | 4/10 | Todos; Jaime explica el motor y la CLI, Richard el modelo matemático, Cael las gráficas, Domenica la animación de la cola y el documento |
 | Implementación | 3/10 | Jaime (motor y CLI), Richard (teoría, escenarios, análisis), Cael (tablas y gráficas) |
 | Documento | 3/10 | Domenica (estructura, resultados, 10 preguntas, conclusiones, video), con evidencias de Cael |
 

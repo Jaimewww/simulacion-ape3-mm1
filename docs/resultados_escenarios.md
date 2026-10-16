@@ -117,6 +117,8 @@ del documento y estos números tienen que salir del mismo comando.
 Todo lo demás del documento es de `reports/` y de Domenica Rojas: portada y datos de la
 práctica, modelo matemático desarrollado, procedimiento, las **10 preguntas de control**
 respondidas (la lista textual está en `docs/division-trabajo.md`), conclusiones atadas a
-los objetivos, y el **video de demostración**. El recurso interactivo de Streamlit
-—etapa 10— también es suyo y puede mostrar exactamente estos números en vivo, porque sale
-de `controller.study.run_study`: el mismo camino que produjo esta tabla.
+los objetivos, y el **video de demostración**. La animación de la cola —etapa 10—
+también es suya: muestra exactamente estos números, porque sale de
+`controller.study.run_study`, el mismo camino que produjo esta tabla. La práctica
+**no tiene interfaz interactiva** (lo pidió el docente): el recurso gráfico es la
+animación, que se genera desde la línea de comandos con `--animate`.
