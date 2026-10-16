@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..model import ScenarioRun, ScenarioSummary
+from ..model import ScenarioRun, ScenarioSummary, run_scenarios, summarize
 
 __all__ = [
     "StudyResult",
@@ -59,4 +59,5 @@ def run_study(
     Raises:
         ValueError: If any scenario is unstable (``lam >= mu``).
     """
-    raise NotImplementedError("Richard Chamba — see openspec plan")
+    runs = run_scenarios(replications, sim_time, base_seed, warmup)
+    return StudyResult(runs=tuple(runs), summaries=tuple(summarize(runs)))
