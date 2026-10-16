@@ -263,3 +263,29 @@ def test_cli_scenarios_mode_uses_the_shared_service(cli, monkeypatch, tmp_path) 
         "base_seed": 42,
         "warmup": 0.0,
     }
+
+
+def test_cli_scenarios_mode_writes_every_reported_artifact(cli, tmp_path) -> None:
+    """One command regenerates the report's table (CSV and LaTeX) and figures.
+
+    This is the integration promise of tasks.md 7.2: the document's table and
+    figures MUST come out of a single command, so the LaTeX export cannot be
+    left to a manual step.
+    """
+    code = cli.main(
+        [
+            "--scenarios",
+            "--replications",
+            "1",
+            "--sim-time",
+            "50",
+            "--out",
+            str(tmp_path),
+        ]
+    )
+
+    assert code == 0
+    assert (tmp_path / "comparacion.csv").stat().st_size > 0
+    assert (tmp_path / "comparacion.tex").stat().st_size > 0
+    assert (tmp_path / "teoria_vs_simulacion.png").stat().st_size > 0
+    assert (tmp_path / "comparacion_escenarios.png").stat().st_size > 0

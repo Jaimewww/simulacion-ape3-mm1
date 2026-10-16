@@ -11,7 +11,8 @@ The command has two modes:
   during the oral defense and the only mode that needs nothing but the engine.
 * **the guide's three scenarios** — ``--scenarios`` (the default when no rates
   are given) runs the whole study through ``controller.study.run_study`` and
-  writes the comparison table and the figures into ``--out``. It exists so the
+  writes the comparison table as CSV **and** LaTeX, plus the figures, into
+  ``--out``. It exists so the
   CLI has exactly one orchestration path, the same one the Streamlit page uses.
 
 The console report is deliberately plain text: the printable comparison table
@@ -27,7 +28,7 @@ from typing import Any
 
 from ..model.metrics import is_stable, theoretical_metrics
 from ..model.simulation import ScenarioRun, run_mm1
-from ..view import comparison_dataframe, generate_all, write_csv
+from ..view import comparison_dataframe, generate_all, to_latex, write_csv
 from .study import run_study
 
 DEFAULT_OUTPUT_DIR = Path("outputs")
@@ -156,7 +157,9 @@ def _run_scenarios(args: argparse.Namespace) -> int:
 
     out_dir: Path = args.out
     out_dir.mkdir(parents=True, exist_ok=True)
-    write_csv(comparison_dataframe(result.summaries), out_dir / "comparacion.csv")
+    frame = comparison_dataframe(result.summaries)
+    write_csv(frame, out_dir / "comparacion.csv")
+    to_latex(frame, out_dir / "comparacion.tex")
     generate_all(result.runs, result.summaries, out_dir)
 
     print(f"3 escenarios × {args.replications} réplicas → {out_dir}")
