@@ -4,6 +4,5 @@ simpy>=4.1
 numpy>=1.26
 matplotlib>=3.8
 pandas>=2.1
-streamlit>=1.30
 pytest>=8.0
 ruff>=0.6

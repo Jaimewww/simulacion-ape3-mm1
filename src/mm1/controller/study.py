@@ -4,11 +4,11 @@ Owner: Richard Chamba.
 Specs: S5 (the three scenarios), S6 (per-scenario metrics), S14 (agent-executable
 entry point), S16 (controller layer).
 
-This is the ``C`` that both front ends share: ``mm1.controller.cli`` and the
-Streamlit page call ``run_study`` and render the same numbers. Keeping a single
-entry point is what prevents the document's figures from diverging from the live
-resource. The result carries model data only — no ``pandas``, no Streamlit — so
-the controller never depends on the view.
+This is the ``C`` that every entry point shares: ``mm1.controller.cli`` and the
+renderers call ``run_study`` and render the same numbers. Keeping a single
+entry point is what prevents the document's figures from diverging from the
+generated artifacts. The result carries model data only — no ``pandas``, no web
+framework — so the controller never depends on the view.
 """
 
 from __future__ import annotations

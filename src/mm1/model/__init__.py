@@ -5,7 +5,7 @@ Owner: Richard Chamba (metrics, scenarios, analysis) and Jaime Landazuri
 Specs: S3, S4, S5, S6, S16.
 
 This package is the ``M`` of the MVC structure. It answers questions about the
-queueing system and knows nothing about charts, tables, Streamlit or the
+queueing system and knows nothing about charts, tables, the animation or the
 command line. It MUST NOT import ``mm1.view`` or ``mm1.controller``.
 """
 
