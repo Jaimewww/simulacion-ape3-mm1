@@ -1,0 +1,243 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{makecell}
+\usepackage[table]{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{helvet}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{booktabs} % Para tablas con acabado profesional
+\usepackage{enumitem} % Para control fino de las listas
+
+\renewcommand{\familydefault}{\sfdefault}
+\geometry{
+  a4paper,
+  left=3.0cm,
+  right=3.0cm,
+  top=2.35cm,
+  bottom=2.35cm,
+  headheight=1.9cm,
+  headsep=0.45cm
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.22em}
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.08}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[height=1.35cm]{reporte_tecnico_overleaf_logo.png}}
+\fancyhead[R]{\vspace{0.1cm}\small FEIRNNR - Carrera de Computación}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0pt}
+\makeatletter
+\renewcommand{\headrule}{%
+  {\color{gray!65}\hrule width\headwidth height\headrulewidth \vskip-\headrulewidth}%
+}
+\makeatother
+
+\titleformat{\section}
+  {\bfseries\fontsize{15}{17}\selectfont}
+  {\thesection.}{0.8em}{}
+\titlespacing*{\section}{0pt}{0.7ex}{0.2ex}
+
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+
+\begin{document}
+\thispagestyle{fancy}
+
+\vspace*{0.15cm}
+
+\begin{center}
+{\bfseries\fontsize{23}{26}\selectfont
+Reporte Técnico de Actividades\\
+Práctico-Experimentales Nro. 001\par}
+\end{center}
+
+\section{Datos de Identificación del Estudiante y la Práctica}
+
+\noindent
+\begin{tabularx}{\textwidth}{|L{0.43\textwidth}|Y|}
+\hline
+\textbf{Nombre del estudiante(s)} & Jaime Alejandro Landázuri Román \\ \hline
+\textbf{Asignatura} & Simulación \\ \hline
+\textbf{Ciclo} & 5 A \\ \hline
+\textbf{Unidad} & 1 \\ \hline
+\textbf{Resultado de aprendizaje de la unidad} & R1. Aplica análisis estadísticos de los datos
+de la Simulación para mejorar la calidad de los resultados, bajo los principios de solidaridad, transparencia, responsabilidad y honestidad. \\ \hline
+\textbf{Práctica Nro.} & 001 \\ \hline
+\textbf{Título de la Práctica} & Construcción y simulación computacional de un modelo matemático \\ \hline
+\textbf{Nombre del Docente} & José O. Guamán Q. \\ \hline
+\textbf{Fecha} & 01 de Octubre de 2026 \\
+ & 02 de Octubre 2026 \\ \hline
+\textbf{Horario} & Jueves 10h30 a 11h30 \\
+ & Viernes 07h30 a 09h30 \\ \hline
+\textbf{Lugar} & Aula \\ \hline
+\textbf{Tiempo planificado en el Sílabo} & 3 horas \\ \hline
+\end{tabularx}
+
+\section{Objetivo(s) de la Práctica}
+Comprender el proceso de construcción de un modelo matemático y analizar su comportamiento mediante Python.
+\begin{enumerate}
+    \item Identificar variables, parámetros y relaciones matemáticas de un sistema.
+    \item Implementar un modelo matemático en Python.
+    \item Analizar gráficamente la influencia de los parámetros.
+\end{enumerate}
+
+\section{Materiales y reactivos}
+\begin{itemize}
+    \item NumPy.
+    \item Matplotlib.
+\end{itemize}
+
+\section{Equipos y herramientas}
+\begin{itemize}
+    \item Computador.
+    \item Python 3.
+    \item Java.
+    \item Editor de código.
+\end{itemize}
+
+\section{Procedimiento / Metodología Ejecutada}
+Un modelo matemático representa un fenómeno mediante variables y relaciones matemáticas. Queremos simular el comportamiento de la atmósfera durante 24 horas y determinar en qué horas nuestro modelo considera que existe posibilidad de lluvia.
+\centerline{$I=0.5H+0.3N+0.2T_f$}
+Donde:
+\begin{itemize}
+    \item H = Humedad Normalizada.
+    \item B = Nubosidad Normalizada.
+    \item Tf = Factor de Temperatura.
+\end{itemize}
+Se requiere predecir en qué momento lloverá, para el factor de temperatura se tiene lo siguiente: \\
+\centerline{Factor de Temperatura}
+\begin{table}[h!]
+\centering
+\definecolor{headerblue}{RGB}{19, 93, 126}
+\definecolor{rowlight}{RGB}{205, 235, 248}
+\definecolor{borderblue}{RGB}{64, 160, 206}
+\setlength{\arrayrulewidth}{0.75pt}
+\arrayrulecolor{borderblue}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|l|c|}
+\hline
+\rowcolor{headerblue}
+\textbf{\textcolor{white}{Temperatura}} & \textbf{\textcolor{white}{T\textsubscript{f}}} \\ \hline
+$\mathbf{\le 10\ ^\circ C}$ & 1.00 \\ \hline
+\rowcolor{rowlight}
+$\mathbf{12\ ^\circ C}$ & 0.90 \\ \hline
+$\mathbf{14\ ^\circ C}$ & 0.80 \\ \hline
+\rowcolor{rowlight}
+$\mathbf{16\ ^\circ C}$ & 0.70 \\ \hline
+$\mathbf{18\ ^\circ C}$ & 0.60 \\ \hline
+\rowcolor{rowlight}
+$\mathbf{20\ ^\circ C}$ & 0.50 \\ \hline
+$\mathbf{22\ ^\circ C}$ & 0.40 \\ \hline
+\rowcolor{rowlight}
+$\mathbf{24\ ^\circ C}$ & 0.30 \\ \hline
+$\mathbf{26\ ^\circ C}$ & 0.20 \\ \hline
+\rowcolor{rowlight}
+$\mathbf{\ge 28\ ^\circ C}$ & 0.10 \\ \hline
+\end{tabular}
+\end{table}
+
+\centerline{Tabla de reglas}
+\begin{table}[h!]
+\centering
+\definecolor{headerblue}{RGB}{19, 93, 126}
+\definecolor{rowlight}{RGB}{205, 235, 248}
+\definecolor{borderblue}{RGB}{64, 160, 206}
+\setlength{\arrayrulewidth}{0.75pt}
+\arrayrulecolor{borderblue}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|l|l|}
+\hline
+\rowcolor{headerblue}
+\textbf{\textcolor{white}{Índice I}} & \textbf{\textcolor{white}{Estado}} \\ \hline
+\rowcolor{rowlight}
+$\mathbf{I < 0.40}$ & Sin lluvia \\ \hline
+$\mathbf{0.40 \le I < 0.60}$ & Baja posibilidad \\ \hline
+\rowcolor{rowlight}
+$\mathbf{0.60 \le I < 0.75}$ & Lluvia probable \\ \hline
+$\mathbf{I \ge 0.75}$ & Lluvia \\ \hline
+\end{tabular}
+\end{table}
+
+Ejemplo: \\
+Supongamos que tenemos: \\
+\begin{itemize}
+    \item Humedad = 90%
+    \item Nubosidad = 80%
+    \item Temperatura = 18°C
+\end{itemize}
+Entonces \\
+H = 0.9 \\
+N = 0.8 \\
+Tf = 0.6 \\
+\\
+Aplicamos $I=0.5H+0.3N+0.2T_f$ \\
+\\
+Calculamos $I=0.5(0.90)+0.3(0.80)+0.2(0.60)$ \\
+$I = 0,81 = 81\%$ \\
+Se debe programar en java y Python y llenar esta tabla además agregar las
+graficas que se debe presentar \\
+\begin{table}[h!]
+\centering
+\definecolor{headerblue}{RGB}{19, 93, 126}
+\definecolor{rowlight}{RGB}{205, 235, 248}
+\definecolor{borderblue}{RGB}{64, 160, 206}
+\setlength{\arrayrulewidth}{0.75pt}
+\arrayrulecolor{borderblue}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+\rowcolor{headerblue}
+\textbf{\textcolor{white}{Hora}} & \textbf{\textcolor{white}{Humedad}} & \textbf{\textcolor{white}{Nubosidad}} & \textbf{\textcolor{white}{Temp.}} & \textbf{\textcolor{white}{H}} & \textbf{\textcolor{white}{N}} & \textbf{\textcolor{white}{T\textsubscript{f}}} & \textbf{\textcolor{white}{Índice}} \\ \hline
+\rowcolor{rowlight}
+\textbf{06:00} & 65 & 40 & 14 & & & & \\ \hline
+\textbf{08:00} & 70 & 50 & 16 & & & & \\ \hline
+\rowcolor{rowlight}
+\textbf{10:00} & 68 & 45 & 18 & & & & \\ \hline
+\textbf{12:00} & 60 & 30 & 22 & & & & \\ \hline
+\rowcolor{rowlight}
+\textbf{14:00} & 75 & 70 & 20 & & & & \\ \hline
+\textbf{16:00} & 85 & 85 & 18 & & & & \\ \hline
+\rowcolor{rowlight}
+\textbf{18:00} & 92 & 95 & 16 & & & & \\ \hline
+\textbf{20:00} & 88 & 90 & 17 & & & & \\ \hline
+\rowcolor{rowlight}
+\textbf{22:00} & 80 & 75 & 15 & & & & \\ \hline
+\end{tabular}
+\end{table}
+
+Ajuste el modelo y llene de nuevo la misma tabla además agregar las graficas que
+se debe presentar
+
+\section{Resultados esperados}
+\begin{itemize}
+    \item Modelo implementado correctamente.
+    \item Gráficas de crecimiento y decrecimiento.
+    \item Identificación de la influencia de r.
+    \item Interpretación matemática del comportamiento.
+\end{itemize}
+
+\section{Preguntas de control}
+\begin{enumerate}
+    \item ¿Qué es un modelo matemático?
+    \item ¿Cuál es la diferencia entre variable y parámetro?
+    \item ¿Qué representa P₀?
+    \item ¿Qué ocurre cuando r < 0?
+    \item ¿Qué limitaciones tiene el modelo exponencial?
+\end{enumerate}
+
+\end{document}
