@@ -215,12 +215,10 @@ exporta la tabla comparativa y las figuras a `--out`:
 python -m mm1 --replications 30 --sim-time 1000 --out outputs/
 ```
 
-> **Estado de este segundo modo:** ya está cableado a `controller.study.run_study`,
-> pero **todavía no puede correr** porque sus colaboradores son de etapas
-> posteriores: `run_study` (etapa 7, Richard Chamba), `comparison_dataframe` y
-> `generate_all` (etapas 8 y 9, Cael Soto). Hoy el comando falla nombrando al
-> responsable. Cuando esas etapas se integren **la CLI no se toca**: ya delega en
-> el servicio compartido.
+> **Estado:** funciona de punta a punta. Sale 0 y escribe `comparacion.csv`,
+> `comparacion.tex` y las figuras PNG en `--out` (por defecto `outputs/`). La CLI
+> **no cambió una línea** cuando se integraron las etapas 7, 8 y 9: desde el primer
+> día delegó en `controller.study.run_study` y en los renderizadores de `mm1.view`.
 
 > El paquete usa una disposición `src/`. Para ejecutarlo sin instalarlo, activa el
 > entorno virtual e instálalo en modo editable (`pip install -e .`) o exporta
@@ -240,8 +238,9 @@ repositorio. Las pruebas están repartidas así: `tests/test_smoke.py` cubre la
 estructura congelada y el comportamiento del CLI (38), `tests/test_metrics.py` la teoría
 (17), `tests/test_simulation.py` el motor SimPy (23), `tests/test_scenarios.py` el
 catálogo y las réplicas (9), `tests/test_analysis.py` la agregación con IC 95 % y error
-relativo (58) y `tests/test_study.py` el servicio compartido (5). En total
-**150 pruebas**. Cada integrante agrega sus pruebas primero (enfoque
+relativo (58), `tests/test_study.py` el servicio compartido (5), y `tests/test_tables.py`
+con `tests/test_charts.py` la tabla de 19 columnas, sus exports y las figuras (18 entre
+los dos). En total **168 pruebas**. Cada integrante agrega sus pruebas primero (enfoque
 *test-first*) en su archivo correspondiente.
 
 ## Reparto de trabajo
@@ -269,9 +268,9 @@ El detalle de tareas, dependencias y criterios de aceptación está en
 | Motor M/M/1 en SimPy (`model/simulation.py`) | **✅ Listo** — Jaime Landazuri; 23 pruebas pasan y el motor es consistente contra la teoría |
 | Los 3 escenarios de la guía con réplicas reproducibles (`model/scenarios.py`, `controller/study.py`) | **✅ Listo** — Richard Chamba; 30 réplicas por escenario y semillas derivadas de la base |
 | Análisis de réplicas: IC 95 % de t de Student y error relativo (`model/analysis.py`) | **✅ Listo** — Richard Chamba; 58 pruebas |
-| CLI de una corrida (`python -m mm1 --lam … --mu …`) | **✅ Listo** — Jaime Landazuri; el modo multi-escenario espera las etapas 8 y 9 (la 7 ya está integrada) |
-| Gráficas del comportamiento de la cola y de los tiempos de espera | **Pendiente** (`charts.py`) |
-| Tabla comparativa teórico vs. simulado | **Parcial** — el análisis con IC 95 % y error relativo ya está (`model/analysis.py`); falta el formateo de la tabla y los exports CSV/LaTeX (`view/tables.py`, Cael Soto) |
+| CLI completa (`python -m mm1 --lam … --mu …` y `--scenarios --out …`) | **✅ Listo** — Jaime Landazuri; los dos modos funcionan de punta a punta |
+| Gráficas del comportamiento de la cola y de los tiempos de espera | **✅ Listo** — Cael Soto; en `reports/figures/` y regenerables con el CLI |
+| Tabla comparativa teórico vs. simulado | **✅ Listo** — Cael Soto; 19 columnas con IC 95 % y error relativo, exportada a `comparacion.csv` y `comparacion.tex` |
 | Documento técnico | **Pendiente** (`reports/`) |
 | Video de demostración | **Pendiente** (`reports/`) |
 | Recurso interactivo (Streamlit) | **Pendiente** (`src/mm1/view/streamlit_view.py` + entrada `app/streamlit_app.py`) |

@@ -23,12 +23,12 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 | 1 | Fundación | Estructura MVC (`model/`, `view/`, `controller/`), packaging, facades de las 3 capas, `README.md`, `CONTRIBUTING.md` | Jaime Landazuri | — | — | `main` (commits directos) | `pytest -q` verde · `python -m mm1 --help` resuelve · `import mm1` no importa streamlit | ✅ Hecho |
 | 2 | Modelo · teoría | `model/metrics.py`: `ρ = λ/μ`, `L`, `Lq`, `W`, `Wq` y la guarda de estabilidad | Richard Chamba | 1 | con 3 | `Richard_ModeloTeorico` | `pytest tests/test_metrics.py -q` | ✅ Listo |
 | 3 | Modelo · motor | `model/simulation.py`: SimPy, un servidor, FIFO, registro de clientes y traza de cola | Jaime Landazuri | 1 | con 2 | `feat/jaime-simulation-cli` | `pytest tests/test_simulation.py -q` | ✅ Listo |
-| 4 | Controlador · CLI | `controller/cli.py`: `python -m mm1` con dos modos — una corrida (`--lam/--mu`) y los 3 escenarios con exportación | Jaime Landazuri | 3 | con 5 | `jaime-landazuri` | `python -m mm1 --lam 2.0 --mu 3.0 --sim-time 2000` → salida 0. El modo multi-escenario queda completo recién con 8 y 9 (la 7 ya está integrada y la CLI ya pasa de `run_study`) | 🟡 Parcial |
+| 4 | Controlador · CLI | `controller/cli.py`: `python -m mm1` con dos modos — una corrida (`--lam/--mu`) y los 3 escenarios con exportación | Jaime Landazuri | 3 | con 5 | `jaime-landazuri` | `python -m mm1 --scenarios --replications 5 --sim-time 300 --out outputs/` → salida 0 y escribe `comparacion.csv` + PNG | ✅ Listo |
 | 5 | Modelo · escenarios | `model/scenarios.py`: los 3 escenarios de la guía y las réplicas con semillas | Richard Chamba | 3 | con 4 | `richard-chamba` | `pytest tests/test_scenarios.py -q` | ✅ Listo |
 | 6 | Modelo · análisis | `model/analysis.py`: agregación, IC 95 % y error relativo teórico vs simulado | Richard Chamba | 5 | — | `richard-chamba` | `pytest tests/test_analysis.py -q` | ✅ Listo |
 | 7 | Controlador · servicio | `controller/study.py`: `run_study`, **el servicio que comparten la CLI y la app** | Richard Chamba | 6 | — | `richard-chamba` | `pytest tests/test_study.py -q`; con esto la CLI multi-escenario deja de fallar sin tocar la CLI | ✅ Listo |
-| 8 | Vista · tabla | `view/tables.py`: tabla comparativa de 19 columnas, CSV y LaTeX | Cael Soto | 3, 6 (contrato) | con 9 y con 5-7 | `cael-soto` | `pytest tests/test_tables.py -q` | ⬜ Pendiente |
-| 9 | Vista · gráficas | `view/charts.py`: evolución de la cola, tiempos de espera, teoría vs simulación, comparación de escenarios | Cael Soto | 3, 6 (contrato) | con 8 y con 5-7 | `cael-soto` | `pytest tests/test_charts.py -q` | ⬜ Pendiente |
+| 8 | Vista · tabla | `view/tables.py`: tabla comparativa de 19 columnas, CSV y LaTeX | Cael Soto | 3, 6 (contrato) | con 9 y con 5-7 | `cael-soto` | `pytest tests/test_tables.py -q` | ✅ Listo |
+| 9 | Vista · gráficas | `view/charts.py`: evolución de la cola, tiempos de espera, teoría vs simulación, comparación de escenarios | Cael Soto | 3, 6 (contrato) | con 8 y con 5-7 | `cael-soto` | `pytest tests/test_charts.py -q` | ✅ Listo |
 | 10 | **Vista · recurso interactivo** | `view/streamlit_view.py` + `app/streamlit_app.py`: sliders de λ y μ, aviso de estabilidad, animación de la cola, tabla viva y gráficas interactivas | Domenica Rojas | 7, 8, 9 | — | `domenica-rojas` | `pytest tests/test_app.py -q` y `streamlit run app/streamlit_app.py` arranca | ⬜ Pendiente |
 
 > **La fila 10 es el entregable final del código: el recurso visual.**
@@ -39,13 +39,13 @@ indica qué se puede hacer al mismo tiempo sin pisarse.
 
 - **2 y 3 son independientes**: la teoría es matemática pura y el motor es SimPy. Los
   dos se pueden escribir a la vez porque la interfaz ya está congelada en `design.md`.
-- **4 puede empezar junto con 5**: el modo de una corrida de la CLI ya funciona con solo el motor (etapa 3). El modo multi-escenario recién queda completo cuando existan 8 y 9 — y cuando eso pase **la CLI no se toca**: ya delega en `run_study`, que ya está integrado en `main`.
+- **4 quedó completa cuando entraron 8 y 9**: el modo de una corrida funciona con solo el motor (etapa 3) y el modo multi-escenario necesitaba `run_study` y la exportación. **Todo integrado en `main`** y **la CLI no se tocó ni una línea** en ninguna de las tres etapas: ya delegaba en los servicios correctos desde el primer día.
 - **6 necesita 5** porque agregar réplicas requiere que existan las corridas.
 - **7 es la bisagra**: hasta acá hay piezas sueltas; con `run_study` existe *una* forma
   de obtener todos los resultados. Por eso la app y el documento no pueden divergir.
   **Ya integrada en `main`** (PR #5): la CLI pasó de fallar en `run_study` a fallar en
   `comparison_dataframe` de Cael, que es exactamente el desplazamiento esperado.
-- **8 y 9 no están bloqueadas por 5-7**: ambas consumen `ScenarioSummary`, que ya existe como dataclass congelada en `src/mm1/model/analysis.py` desde el andamiaje. Cael puede implementarlas y testearlas con fixtures propios más el motor real (etapa 3, ya listo), **en paralelo** con Richard. Lo único que espera a la etapa 7 es la verificación end-to-end de la tarea 5.5, que vive en la fase de integración.
+- **8 y 9 no están bloqueadas por 5-7**: ambas consumen `ScenarioSummary`, que ya existe como dataclass congelada en `src/mm1/model/analysis.py` desde el andamiaje. Cael las implementó y testó con fixtures propios más el motor real, **en paralelo** con Richard. **Ya integradas en `main`** (PR #8), y con eso el comando `python -m mm1 --scenarios --out outputs/` funciona de punta a punta por primera vez.
 - **10 va último** porque muestra todo lo anterior junto y en vivo.
 
 ---
