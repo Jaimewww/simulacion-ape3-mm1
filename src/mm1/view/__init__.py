@@ -1,16 +1,7 @@
-"""View layer — every renderer, with no domain computation.
+"""Capa vista: muestra resultados (tablas y gráficos).
 
-Owner: Cael Soto (charts, tables) and Domenica Rojas (the queue animation).
-Specs: S6, S7, S16, S19.
-
-This package is the ``V`` of the MVC structure. Every module here turns model
-data into something a human reads: a Matplotlib figure, a comparison table, or
-the animated queue evolution. Views MUST NOT compute domain results; they call
-``mm1.controller`` for that.
-
-``animation`` is deliberately NOT re-exported here: importing it pulls in the
-animation stack, and ``import mm1`` must stay dependency-free. There is no web
-view: the practice has no interactive interface (S19).
+Convierte datos del modelo en información para leer o exportar.
+No hace cálculos del dominio.
 """
 
 from __future__ import annotations

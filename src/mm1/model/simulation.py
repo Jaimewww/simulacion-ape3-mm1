@@ -1,28 +1,12 @@
-"""SimPy M/M/1 simulation core.
+"""Simulación M/M/1 con SimPy.
 
-Owner: Jaime Landazuri.
-Specs: S4 (pseudocode), S5 (scenarios), S6 (per-scenario records).
+Modelo de eventos discretos con:
+- Llegadas según distribución exponencial (Poisson)
+- Servicio exponencial
+- Un solo servidor (capacidad 1)
+- Cola FIFO
 
-This module defines the data recorded by one simulation run and the entry point
-that drives the discrete-event model described in guide section 5.1: one Poisson
-arrival stream, one server of ``capacity = 1``, exponential service times and a
-FIFO queue.
-
-Decisions documented here because they are visible in the results:
-
-* The random numbers come from the standard-library ``random.Random`` seeded per
-  run, not from a global generator, so a run is reproducible from ``seed`` alone
-  on any interpreter version.
-* ``queue_trace`` is piecewise constant: each ``(time, length)`` entry holds from
-  its own time until the next entry. The timer averages over that trace.
-* A customer whose service would finish after ``sim_time`` still occupies the
-  server until the horizon but is **not** recorded, so every recorded visit is a
-  completed one and ``departure_time <= sim_time`` always holds. This is the
-  usual end-of-horizon truncation; its bias is negligible for the 1000-unit runs
-  the practice uses and it is why ``n_customers`` means "completed visits".
-* Input is validated before the model runs: non-positive rates, a non-positive
-  horizon and an out-of-range ``warmup`` are rejected with a diagnostic message,
-  while ``lam >= mu`` raises the guide's own ``El sistema no es estable``.
+Solo se registran clientes que terminan su servicio dentro del tiempo simulado.
 """
 
 from __future__ import annotations
@@ -35,53 +19,25 @@ import simpy
 
 from .metrics import is_stable
 
-# Upper bound for the seed drawn when the caller passes ``seed=None``.
+# Límite superior de la semilla dibujada cuando el caller pasa ``seed=None``.
 _MAX_SEED = 2**32
 
 
-# SPEC: S4, S6 — one simulated customer and its wait/service times.
 @dataclass(frozen=True)
 class CustomerRecord:
-    """Timeline of a single simulated customer.
-
-    Attributes:
-        customer_id: Sequential identifier of the customer.
-        arrival_time: Simulation time at which the customer arrives.
-        service_start: Simulation time at which service starts.
-        departure_time: Simulation time at which the customer leaves.
-        wait_time: Time spent waiting in the queue.
-        service_time: Time spent being served.
-    """
+    """Datos de un cliente atendido durante la simulación."""
 
     customer_id: int
-    arrival_time: float
-    service_start: float
-    departure_time: float
-    wait_time: float
-    service_time: float
+    arrival_time: float  # Hora de llegada
+    service_start: float # Hora en que empieza a ser atendido
+    departure_time: float # Hora en que sale del sistema
+    wait_time: float     # Tiempo esperando en cola
+    service_time: float  # Tiempo de atención
 
 
-# SPEC: S4, S6 — aggregate result of one scenario run.
 @dataclass(frozen=True)
 class ScenarioRun:
-    """Aggregated result of a single M/M/1 simulation run.
-
-    Attributes:
-        scenario: Scenario identifier the run belongs to.
-        lam: Arrival rate used in the run.
-        mu: Service rate used in the run.
-        seed: Random seed used in the run.
-        sim_time: Total simulated time.
-        warmup: Warm-up period discarded from statistics.
-        n_customers: Number of customers that completed service.
-        mean_wait: Simulated average waiting time in the queue.
-        mean_queue: Simulated average queue length.
-        mean_system_time: Simulated average time in the system.
-        mean_in_system: Simulated average number of customers in the system.
-        utilization: Simulated server utilization.
-        customers: Per-customer records of the run.
-        queue_trace: Sampled ``(time, queue_length)`` pairs.
-    """
+    """Resultado agregado de una corrida de simulación."""
 
     scenario: int
     lam: float
@@ -90,29 +46,17 @@ class ScenarioRun:
     sim_time: float
     warmup: float
     n_customers: int
-    mean_wait: float
-    mean_queue: float
-    mean_system_time: float
-    mean_in_system: float
-    utilization: float
+    mean_wait: float        # Promedio de tiempo en cola
+    mean_queue: float       # Promedio de longitud de cola
+    mean_system_time: float # Promedio de tiempo en sistema
+    mean_in_system: float   # Promedio de clientes en sistema
+    utilization: float      # Uso del servidor
     customers: tuple[CustomerRecord, ...]
     queue_trace: tuple[tuple[float, int], ...]
 
 
-# SPEC: S4 — reject input that cannot produce a stationary M/M/1 result.
 def _validate(lam: float, mu: float, sim_time: float, warmup: float) -> None:
-    """Reject parameters the model cannot use.
-
-    Args:
-        lam: Arrival rate ``lambda``.
-        mu: Service rate ``mu``.
-        sim_time: Total simulated time.
-        warmup: Warm-up period.
-
-    Raises:
-        ValueError: If a rate is not positive, if the horizon is not positive, if
-            ``warmup`` falls outside ``[0, sim_time)``, or if ``lam >= mu``.
-    """
+    """Revisa que los parámetros sean válidos."""
     if lam <= 0 or mu <= 0:
         raise ValueError("las tasas lam y mu deben ser positivas")
     if sim_time <= 0:
@@ -123,7 +67,6 @@ def _validate(lam: float, mu: float, sim_time: float, warmup: float) -> None:
         raise ValueError("El sistema no es estable")
 
 
-# SPEC: S4 — spawn customers with exponential inter-arrival times.
 def _arrivals(
     env: simpy.Environment,
     server: simpy.Resource,
@@ -134,7 +77,7 @@ def _arrivals(
     customers: list[CustomerRecord],
     queue_trace: list[tuple[float, int]],
 ) -> Generator[simpy.Event, None, None]:
-    """Generate arrivals until the horizon and start one process per customer."""
+    """Genera llegadas con tiempo entre llegadas exponencial."""
     customer_id = 0
     while True:
         yield env.timeout(rng.expovariate(lam))
@@ -156,7 +99,6 @@ def _arrivals(
         customer_id += 1
 
 
-# SPEC: S4, S6 — queue for the single server, then serve FIFO.
 def _customer(
     env: simpy.Environment,
     server: simpy.Resource,
@@ -168,7 +110,7 @@ def _customer(
     customers: list[CustomerRecord],
     queue_trace: list[tuple[float, int]],
 ) -> Generator[simpy.Event, None, None]:
-    """Request the server, record the visit if it completes inside the horizon."""
+    """Espera en cola, es atendido (FIFO) y se registra si termina dentro del tiempo."""
     with server.request() as request:
         queue_trace.append((float(env.now), len(server.queue)))
         yield request
@@ -179,7 +121,7 @@ def _customer(
         service_time = rng.expovariate(mu)
         departure_time = service_start + service_time
         if departure_time > sim_time:
-            # In service at the horizon: keep the server busy, record nothing.
+            # Aún en servicio al finalizar: no se registra este cliente
             yield env.timeout(max(sim_time - service_start, 0.0))
             return
 
@@ -196,9 +138,9 @@ def _customer(
         )
 
 
-# SPEC: S6 — value of a piecewise-constant function at one instant.
 def _value_at(breakpoints: list[tuple[float, float]], when: float) -> float:
-    """Return the last value whose time is ``<= when``, or ``0.0`` before the first."""
+    """Obtiene el valor de una función a trozos (constante entre cambios)
+    en el instante 'when'. Busca el último cambio con tiempo <= when."""
     value = 0.0
     for time, candidate in breakpoints:
         if time > when:
@@ -207,18 +149,9 @@ def _value_at(breakpoints: list[tuple[float, float]], when: float) -> float:
     return value
 
 
-# SPEC: S6 — time average of a piecewise-constant function over a window.
 def _time_average(breakpoints: list[tuple[float, float]], start: float, end: float) -> float:
-    """Average a piecewise-constant function over ``[start, end]``.
-
-    Args:
-        breakpoints: ``(time, value)`` pairs sorted by time; each value holds from
-            its own time until the next entry.
-        start: Left edge of the observation window.
-        end: Right edge of the observation window.
-
-    Returns:
-        The time-weighted average, or ``0.0`` for an empty window.
+    """Promedio ponderado por tiempo de una función a trozos entre start y end.
+    Se usa para obtener promedios de cola y de clientes en sistema.
     """
     if end <= start:
         return 0.0
@@ -237,9 +170,10 @@ def _time_average(breakpoints: list[tuple[float, float]], start: float, end: flo
     return total / (end - start)
 
 
-# SPEC: S6 — number of customers inside the system over time.
 def _in_system_breakpoints(customers: list[CustomerRecord]) -> list[tuple[float, float]]:
-    """Build the piecewise-constant customer count inside the system."""
+    """Obtiene el número de clientes dentro del sistema a lo largo del tiempo.
+    Para cada llegada +1, para cada salida -1. Se convierte a función a trozos.
+    """
     events: list[tuple[float, float]] = []
     for customer in customers:
         events.append((customer.arrival_time, 1.0))
@@ -254,7 +188,6 @@ def _in_system_breakpoints(customers: list[CustomerRecord]) -> list[tuple[float,
     return breakpoints
 
 
-# SPEC: S4, S5 — run one M/M/1 scenario with SimPy.
 def run_mm1(
     lam: float,
     mu: float,
@@ -263,38 +196,24 @@ def run_mm1(
     scenario: int = 0,
     warmup: float = 0.0,
 ) -> ScenarioRun:
-    """Simulate one M/M/1 scenario and return its aggregated result.
-
-    Args:
-        lam: Average arrival rate ``lambda``.
-        mu: Average service rate ``mu``.
-        sim_time: Total simulated time in the same time units as the rates.
-        seed: Optional seed for the random number generator. When omitted, a seed
-            is drawn and reported in the result so the run can be replayed.
-        scenario: Scenario identifier attached to the result.
-        warmup: Warm-up period discarded from the reported statistics. Customer
-            records keep the whole run; only the statistics are filtered.
-
-    Returns:
-        The :class:`ScenarioRun` produced by the simulation.
-
-    Raises:
-        ValueError: If the parameters are unusable, or if ``lam >= mu``.
-    """
+    """Ejecuta una simulación M/M/1 y devuelve los resultados."""
     _validate(lam, mu, sim_time, warmup)
 
     resolved_seed = seed if seed is not None else random.Random().randrange(_MAX_SEED)
     rng = random.Random(resolved_seed)
 
     env = simpy.Environment()
-    server = simpy.Resource(env, capacity=1)
-    customers: list[CustomerRecord] = []
+    server = simpy.Resource(env, capacity=1)  # Un solo servidor (atención uno por uno)
+    customers: list[CustomerRecord] = []        # Clientes que terminaron y se registraron
+    # Traza de cola: (tiempo, longitud_cola). Guarda cambios en el tamaño de cola
     queue_trace: list[tuple[float, int]] = [(0.0, 0)]
 
     env.process(_arrivals(env, server, rng, lam, mu, sim_time, customers, queue_trace))
     env.run(until=sim_time)
 
     window = sim_time - warmup
+    # Solo contamos clientes que llegaron después (o en) el periodo de calentamiento
+    # según criterio usado: se excluyen los que llegaron antes de warmup
     counted = [customer for customer in customers if customer.arrival_time >= warmup]
     completed = len(customers)
 
@@ -305,6 +224,7 @@ def run_mm1(
         mean_wait = 0.0
         mean_system_time = 0.0
 
+    # Tiempo que el servidor estuvo ocupado (para calcular utilización)
     busy = 0.0
     for customer in customers:
         start = max(customer.service_start, warmup)
@@ -322,10 +242,10 @@ def run_mm1(
         warmup=warmup,
         n_customers=completed,
         mean_wait=mean_wait,
-        mean_queue=_time_average(trace, warmup, sim_time),
+        mean_queue=_time_average(trace, warmup, sim_time),  # promedio de cola por tiempo
         mean_system_time=mean_system_time,
-        mean_in_system=_time_average(_in_system_breakpoints(customers), warmup, sim_time),
-        utilization=busy / window,
+        mean_in_system=_time_average(_in_system_breakpoints(customers), warmup, sim_time),  # clientes en sistema por tiempo
+        utilization=busy / window if window > 0 else 0.0,  # ρ_sim = tiempo ocupado / tiempo observado
         customers=tuple(customers),
         queue_trace=tuple(queue_trace),
     )

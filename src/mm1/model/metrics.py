@@ -1,82 +1,41 @@
-"""Theoretical metrics of the M/M/1 queue.
+"""Métricas teóricas del sistema M/M/1.
 
-Owner: Richard Chamba.
-Specs: S3 (theoretical model and formulas), S6 (per-scenario metrics).
-
-This module holds the closed-form measures of the M/M/1 system. It contains no
-randomness, no SimPy and no I/O: only the analytical definitions frozen by the
-guide (`docs/guia/ape3_guia_simulacion_semana3.txt`, section 5.1).
+Calcula las medidas cerradas a partir de λ (llegadas) y μ (servicio).
+Solo usa fórmulas, sin simulación.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-# Absolute tolerance for comparisons with analytic values, never for stability.
+# Tolerancia absoluta para comparaciones con valores analíticos.
 THEORY_TOLERANCE = 1e-9
 
 
-# SPEC: S3 — theoretical measures listed in guide section 5.1.
 @dataclass(frozen=True)
 class TheoryMetrics:
-    """Theoretical performance measures of an M/M/1 queue.
+    """Medidas teóricas del modelo M/M/1 (una cola, un servidor)."""
 
-    Attributes:
-        rho: Server utilization ``lambda / mu``.
-        L: Average number of customers in the system.
-        Lq: Average number of customers waiting in the queue.
-        W: Average time a customer spends in the system.
-        Wq: Average time a customer spends waiting in the queue.
-    """
-
-    rho: float
-    L: float
-    Lq: float
-    W: float
-    Wq: float
+    rho: float  # Utilización del servidor (λ/μ)
+    L: float    # Clientes promedio en el sistema
+    Lq: float   # Clientes promedio en cola
+    W: float    # Tiempo promedio en sistema
+    Wq: float   # Tiempo promedio en cola
 
 
-# SPEC: S3 — server utilization rho = lambda / mu.
 def utilization(lam: float, mu: float) -> float:
-    """Return the server utilization ``rho = lam / mu``.
-
-    Args:
-        lam: Average arrival rate ``lambda``.
-        mu: Average service rate ``mu``.
-
-    Returns:
-        The utilization of the single server.
-    """
+    """Calcula la utilización ρ = λ/μ."""
     return lam / mu
 
 
-# SPEC: S3 — the system is stable when lambda < mu.
 def is_stable(lam: float, mu: float) -> bool:
-    """Return whether the queue is stable, i.e. ``lam < mu``.
-
-    Args:
-        lam: Average arrival rate ``lambda``.
-        mu: Average service rate ``mu``.
-
-    Returns:
-        ``True`` when the stability condition ``lambda < mu`` holds.
-    """
+    """Verifica si el sistema es estable: λ < μ."""
     return lam < mu
 
 
-# SPEC: S3, S6 — rho, L, Lq, W and Wq for a stable system.
 def theoretical_metrics(lam: float, mu: float) -> TheoryMetrics:
-    """Return the theoretical ``rho``, ``L``, ``Lq``, ``W`` and ``Wq``.
-
-    Args:
-        lam: Average arrival rate ``lambda``.
-        mu: Average service rate ``mu``.
-
-    Returns:
-        The :class:`TheoryMetrics` for a stable system.
-
-    Raises:
-        ValueError: If ``lam >= mu``; stationary metrics do not exist.
+    """Calcula las métricas teóricas para un sistema estable.
+    Fórmulas (guía): L=λ/(μ-λ), Lq=λ^2/(μ(μ-λ)), W=1/(μ-λ), Wq=λ/(μ(μ-λ)), ρ=λ/μ.
     """
     if not is_stable(lam, mu):
         raise ValueError("El sistema no es estable")

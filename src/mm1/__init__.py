@@ -1,22 +1,7 @@
-"""M/M/1 queue simulation package (APE 003 — Simulación, 5.º ciclo FEIRNNR).
+"""Paquete para simular un sistema M/M/1 con SimPy.
 
-Simulación de un sistema de líneas de espera M/M/1 mediante SimPy, structured as
-MVC:
-
-* ``mm1.model`` — the domain: theory, SimPy engine, scenarios, statistics.
-* ``mm1.view`` — the renderers: Matplotlib figures, comparison tables, animation.
-* ``mm1.controller`` — the orchestration driven by the command line.
-
-This package re-exports the frozen public API used by the CLI, the renderers and the
-tests. Importing it only binds names: it performs no simulation, no I/O
-and no computation, and it imports neither a web framework nor the animation stack.
-
-Owners:
-    - Jaime Landazuri: ``model/simulation.py``, ``controller/cli.py``.
-    - Richard Chamba: ``model/metrics.py``, ``model/scenarios.py``,
-      ``model/analysis.py``, ``controller/study.py``.
-    - Cael Soto: ``view/tables.py``, ``view/charts.py``.
-    - Domenica Rojas: ``view/animation.py``, ``reports/**``.
+Reexporta las funciones y clases más usadas desde el modelo, el controlador
+y la vista, para poder importarlas desde `mm1.*`.
 """
 
 from __future__ import annotations

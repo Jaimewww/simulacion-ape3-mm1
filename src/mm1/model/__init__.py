@@ -1,12 +1,7 @@
-"""Model layer — the M/M/1 domain, with no rendering and no I/O.
+"""Capa modelo: lógica y cálculos del sistema M/M/1.
 
-Owner: Richard Chamba (metrics, scenarios, analysis) and Jaime Landazuri
-(simulation).
-Specs: S3, S4, S5, S6, S16.
-
-This package is the ``M`` of the MVC structure. It answers questions about the
-queueing system and knows nothing about charts, tables, the animation or the
-command line. It MUST NOT import ``mm1.view`` or ``mm1.controller``.
+Contiene métricas teóricas, simulación con SimPy, escenarios y análisis.
+No depende de la vista ni del controlador.
 """
 
 from __future__ import annotations

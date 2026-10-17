@@ -1,10 +1,7 @@
-"""Statistical comparison of simulated runs against theory.
+"""Análisis estadístico: compara simulación con teoría.
 
-Owner: Richard Chamba.
-Specs: S6 (theoretical vs simulated comparison), S7 (expected analysis).
-
-This module aggregates replications per scenario and computes confidence
-intervals and relative errors against the closed-form M/M/1 measures.
+Calcula promedios, desviación, intervalo de confianza al 95% (t-Student)
+y errores relativos para cada escenario.
 """
 
 from __future__ import annotations
@@ -18,28 +15,9 @@ from .metrics import TheoryMetrics, theoretical_metrics
 from .simulation import ScenarioRun
 
 
-# SPEC: S6, S7 — summary of one scenario: theory, simulation and error.
 @dataclass(frozen=True)
 class ScenarioSummary:
-    """Theory-versus-simulation summary of one scenario.
-
-    Attributes:
-        scenario: Scenario identifier.
-        lam: Arrival rate ``lambda``.
-        mu: Service rate ``mu``.
-        replications: Number of replications aggregated.
-        theory: Theoretical measures for the scenario.
-        sim_mean_wait: Simulated average waiting time.
-        sim_mean_queue: Simulated average queue length.
-        sim_mean_in_system: Simulated average number of customers in the system.
-        sim_utilization: Simulated server utilization.
-        std_wait: Standard deviation of the simulated waiting times.
-        ci95_wait: 95% confidence interval of the simulated waiting time.
-        rel_error_L: Relative error of ``L`` against theory.
-        rel_error_Lq: Relative error of ``Lq`` against theory.
-        rel_error_W: Relative error of ``W`` against theory.
-        rel_error_Wq: Relative error of ``Wq`` against theory.
-    """
+    """Resumen teórico vs simulado para un escenario."""
 
     scenario: int
     lam: float
@@ -84,11 +62,11 @@ def _regularized_beta(x: float, a: float, b: float) -> float:
         if abs(delta - 1) < 1e-14:
             scale = exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * log(x) + b * log1p(-x))
             return scale * fraction / a
-    raise ArithmeticError("Student-t beta fraction did not converge")
+    raise ArithmeticError("La fracción beta de Student-t no convergió")
 
 
 def _student_t_critical(confidence: float, df: int) -> float:
-    """Invert the Student-t beta relation for a central two-sided probability."""
+    """Obtiene el valor crítico t para intervalo de confianza bilateral."""
 
     def below_quantile(t: float) -> bool:
         if confidence < 0.5:
@@ -109,24 +87,14 @@ def _student_t_critical(confidence: float, df: int) -> float:
     return (low + high) / 2
 
 
-# SPEC: S7 — confidence interval of a sample.
 def confidence_interval(values: Sequence[float], confidence: float = 0.95) -> tuple[float, float]:
-    """Return the two-sided Student-t interval of the sample mean (D15).
-
-    Args:
-        values: Observed samples.
-        confidence: Confidence level in ``(0, 1)``.
-
-    Returns:
-        The ``(lower, upper)`` bounds; a singleton has coincident bounds.
-
-    Raises:
-        ValueError: For empty/non-finite observations or confidence outside (0, 1).
+    """Calcula intervalo de confianza al 95% (t-Student) para la media muestral.
+    Se usa sobre las medias por réplica (no sobre todos los clientes).
     """
     if not 0 < confidence < 1:
-        raise ValueError("confidence must be between 0 and 1")
+        raise ValueError("la confianza debe estar entre 0 y 1")
     if not values or not all(isfinite(value) for value in values):
-        raise ValueError("values must contain finite observations")
+        raise ValueError("Los valores deben contener observaciones finitas")
     mean = fmean(values)
     if len(values) == 1:
         return mean, mean
@@ -137,29 +105,17 @@ def confidence_interval(values: Sequence[float], confidence: float = 0.95) -> tu
     return mean - margin, mean + margin
 
 
-# SPEC: S6, S7 — relative error between a simulated and a theoretical value.
 def relative_error(simulated: float, theoretical: float) -> float:
-    """Return the relative error of ``simulated`` against ``theoretical``.
-
-    Args:
-        simulated: Value obtained from the simulation.
-        theoretical: Value predicted by the analytical model.
-
-    Returns:
-        The relative error between both values.
-
-    Raises:
-        ValueError: If the theoretical value is zero.
-    """
+    """Calcula error relativo: |sim - teo| / |teo|."""
     if theoretical == 0:
         raise ValueError("relative error is undefined for zero theory")
     return abs(simulated - theoretical) / abs(theoretical)
 
 
 def _group_runs(runs: Sequence[ScenarioRun]) -> dict[int, list[ScenarioRun]]:
-    """Group replications while rejecting incompatible rates for the same id."""
+    """Agrupa réplicas por escenario y verifica que las tasas sean consistentes."""
     if not runs:
-        raise ValueError("runs must not be empty")
+        raise ValueError("Las ejecuciones no deben estar vacías")
     groups: dict[int, list[ScenarioRun]] = {}
     for run in runs:
         peers = groups.setdefault(run.scenario, [])
@@ -169,24 +125,13 @@ def _group_runs(runs: Sequence[ScenarioRun]) -> dict[int, list[ScenarioRun]]:
     return groups
 
 
-# SPEC: S6, S7 — aggregate runs into per-scenario summaries.
 def summarize(runs: Sequence[ScenarioRun]) -> list[ScenarioSummary]:
-    """Aggregate ``runs`` into one :class:`ScenarioSummary` per scenario.
-
-    Args:
-        runs: Simulated runs, possibly spanning several scenarios.
-
-    Returns:
-        The per-scenario summaries.
-
-    Raises:
-        ValueError: If runs are empty or a scenario contains inconsistent rates.
-    """
+    """Agrupa las corridas por escenario y genera un resumen para cada uno."""
     summaries = []
     for scenario, peers in sorted(_group_runs(runs).items()):
         first = peers[0]
         theory = theoretical_metrics(first.lam, first.mu)
-        waits = [run.mean_wait for run in peers]
+        waits = [run.mean_wait for run in peers]  # medias por réplica
         mean_wait = fmean(waits)
         mean_queue = fmean(run.mean_queue for run in peers)
         mean_in_system = fmean(run.mean_in_system for run in peers)

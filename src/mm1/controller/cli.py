@@ -1,24 +1,12 @@
-"""Command-line entry point for the M/M/1 practice.
+"""Punto de entrada de línea de comandos para simular M/M/1.
 
-Owner: Jaime Landazuri.
-Specs: S4 (pseudocode workflow), S6 (per-scenario metrics), S14 (agent-executable
-entry point).
+Este módulo permite ejecutar la simulación desde la terminal en dos modos:
+- Modo simple: con --lam y --mu se hace una sola corrida y se comparan
+  resultados teóricos y simulados.
+- Modo por escenarios: (por defecto) corre los tres escenarios de la guía,
+  genera tabla CSV/LaTeX y gráficos en la carpeta de salida.
 
-The command has two modes:
-
-* **single run** — ``--lam`` and ``--mu`` run one simulation and print the
-  simulated metrics next to the theoretical ones. This is the live probe used
-  during the oral defense and the only mode that needs nothing but the engine.
-* **the guide's three scenarios** — ``--scenarios`` (the default when no rates
-  are given) runs the whole study through ``controller.study.run_study`` and
-  writes the comparison table as CSV **and** LaTeX, plus the figures, into
-  ``--out``. ``--animate`` additionally renders the queue animation there.
-  It exists so the
-  CLI has exactly one orchestration path, the same service every renderer uses.
-
-The console report is deliberately plain text: the printable comparison table
-and the figures belong to ``mm1.view``. This is the only entry point: the
-practice has no interactive interface (teacher requirement).
+No hay interfaz interactiva. Toda la lógica de orquestación pasa por study.
 """
 
 from __future__ import annotations
@@ -33,16 +21,18 @@ from ..model.simulation import ScenarioRun, run_mm1
 from ..view import comparison_dataframe, generate_all, to_latex, write_csv
 from .study import run_study
 
+# Directorio donde se guardan resultados (CSV, LaTeX, gráficas)
 DEFAULT_OUTPUT_DIR = Path("outputs")
+# Semilla base para los escenarios
 DEFAULT_BASE_SEED = 42
-EXIT_OK = 0
-EXIT_UNSTABLE = 2
-EXIT_INVALID = 3
+# Códigos de salida
+EXIT_OK = 0          # Todo salió bien
+EXIT_UNSTABLE = 2     # Sistema no estable (λ >= μ)
+EXIT_INVALID = 3      # Parámetros inválidos
 
 
-# SPEC: S4, S14 — the flag surface frozen in design.md.
 def _build_parser() -> argparse.ArgumentParser:
-    """Build the argument parser with the frozen flag surface."""
+    """Configura los argumentos de línea de comandos (CLI)."""
     parser = argparse.ArgumentParser(
         prog="mm1",
         description=(
@@ -55,14 +45,14 @@ def _build_parser() -> argparse.ArgumentParser:
         type=float,
         default=None,
         metavar="LAMBDA",
-        help="tasa de llegada λ del modo de una corrida",
+        help="tasa de llegada λ para una sola corrida",
     )
     parser.add_argument(
         "--mu",
         type=float,
         default=None,
         metavar="MU",
-        help="tasa de servicio μ del modo de una corrida",
+        help="tasa de servicio μ para una sola corrida",
     )
     parser.add_argument(
         "--scenarios",
@@ -88,7 +78,7 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=None,
         metavar="S",
-        help="semilla; en modo multi-escenario es la semilla base",
+        help="semilla; en modo con escenarios es la semilla base",
     )
     parser.add_argument(
         "--warmup",
@@ -102,23 +92,25 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
         metavar="DIR",
-        help="directorio de salida del modo multi-escenario (por defecto outputs)",
+        help="directorio de salida para el modo con escenarios (por defecto outputs)",
     )
     return parser
 
 
-# SPEC: S4, S6 — print the simulated metrics next to the theoretical ones.
 def _print_single_report(lam: float, mu: float, run: ScenarioRun) -> None:
-    """Print one run's simulated metrics against the analytical oracle."""
+    """Muestra en consola los resultados teóricos y simulados de una sola corrida.
+    Compara: tiempo en cola (Wq), tiempo en sistema (W), cola promedio (Lq),
+    clientes en sistema (L) y utilización (ρ).
+    """
     theory = theoretical_metrics(lam, mu)
     print(f"Corrida única M/M/1   λ={lam:g}  μ={mu:g}  ρ_teórica={theory.rho:.4f}")
     print(f"{'métrica':<14}{'teórica':>12}{'simulada':>12}{'error rel.':>12}")
     for label, expected, observed in (
-        ("Wq", theory.Wq, run.mean_wait),
-        ("W", theory.W, run.mean_system_time),
-        ("Lq", theory.Lq, run.mean_queue),
-        ("L", theory.L, run.mean_in_system),
-        ("utilización", theory.rho, run.utilization),
+        ("Wq", theory.Wq, run.mean_wait),          # tiempo promedio en cola
+        ("W", theory.W, run.mean_system_time),      # tiempo promedio en sistema
+        ("Lq", theory.Lq, run.mean_queue),          # longitud promedio de cola
+        ("L", theory.L, run.mean_in_system),        # clientes promedio en sistema
+        ("utilización", theory.rho, run.utilization),# uso del servidor
     ):
         error = abs(observed - expected) / expected if expected else 0.0
         print(f"{label:<14}{expected:>12.4f}{observed:>12.4f}{error:>11.2%}")
@@ -128,11 +120,12 @@ def _print_single_report(lam: float, mu: float, run: ScenarioRun) -> None:
     )
 
 
-# SPEC: S4 — one simulation driven straight from the command line.
 def _run_single(args: argparse.Namespace) -> int:
-    """Run one simulation and report it. Writes no files."""
-    lam: float = args.lam
-    mu: float = args.mu
+    """Ejecuta una sola corrida con λ y μ dados.
+    Verifica estabilidad, corre simulación y muestra resultados teóricos vs simulados.
+    """
+    lam: float = args.lam  # tasa de llegadas
+    mu: float = args.mu    # tasa de servicio
     if not is_stable(lam, mu):
         print("El sistema no es estable")
         return EXIT_UNSTABLE
@@ -147,9 +140,10 @@ def _run_single(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-# SPEC: S4, S6, S7 — the guide's three scenarios, through the shared service.
 def _run_scenarios(args: argparse.Namespace) -> int:
-    """Run the three-scenario study and export its table and figures."""
+    """Ejecuta los tres escenarios de la guía (múltiples réplicas por defecto).
+    Genera tabla CSV/LaTeX, gráficos y muestra ruta de salida.
+    """
     result = run_study(
         replications=args.replications,
         sim_time=args.sim_time,
@@ -160,25 +154,18 @@ def _run_scenarios(args: argparse.Namespace) -> int:
     out_dir: Path = args.out
     out_dir.mkdir(parents=True, exist_ok=True)
     frame = comparison_dataframe(result.summaries)
-    write_csv(frame, out_dir / "comparacion.csv")
-    to_latex(frame, out_dir / "comparacion.tex")
-    generate_all(result.runs, result.summaries, out_dir)
+    write_csv(frame, out_dir / "comparacion.csv")      # Tabla en CSV
+    to_latex(frame, out_dir / "comparacion.tex")      # Tabla en LaTeX
+    generate_all(result.runs, result.summaries, out_dir)  # Gráficas
 
     print(f"3 escenarios × {args.replications} réplicas → {out_dir}")
     return EXIT_OK
 
 
-# SPEC: S4, S14 — run the end-to-end workflow from the command line.
+# Punto de entrada principal
 def main(argv: Sequence[str] | None = None) -> int:
-    """Run the M/M/1 workflow and return a process exit code.
-
-    Args:
-        argv: Command-line arguments; defaults to ``sys.argv[1:]``.
-
-    Returns:
-        The process exit code: ``0`` on success, ``2`` when the requested system
-        is unstable, ``3`` when the parameters are unusable. argparse exits with
-        ``2`` on a usage error, and ``--help`` exits with ``0``.
+    """Ejecuta el programa y devuelve el código de salida.
+    CLI = Línea de comandos. Decide entre modo simple o modo por escenarios.
     """
     parser = _build_parser()
     args: Any = parser.parse_args(argv)
@@ -190,5 +177,5 @@ def main(argv: Sequence[str] | None = None) -> int:
         parser.error("el modo de una corrida necesita --lam y --mu juntos")
 
     if single:
-        return _run_single(args)
-    return _run_scenarios(args)
+        return _run_single(args)  # Una sola corrida
+    return _run_scenarios(args)  # Tres escenarios de la guía
